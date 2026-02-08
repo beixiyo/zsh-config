@@ -7,10 +7,12 @@ source ~/.zsh/env.zsh
 
 source ~/.zsh/init.zsh
 source ~/.zsh/aliases.zsh
-source ~/.zsh/functions.zsh
+source ~/.zsh/functions/index.zsh
+
 source ~/.zsh/history.zsh
 source ~/.zsh/completions.zsh
 source ~/.zsh/plugins.zsh
+
 # keybindings 必须在 plugins 之后，否则 history-substring-search 的 bindkey 会失效
 source ~/.zsh/keybindings.zsh
 source ~/.zsh/prompt.zsh
