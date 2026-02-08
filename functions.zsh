@@ -46,7 +46,23 @@ fso() {
     "${_fzf_bind_file_line[@]}"
 }
 
-## Find Process 杀死进程
+## Find Process 杀死进程（按内存 MB 倒序，选中的用 kill -9）
 fp() {
-  ps -ef | fzf --header "Kill Process" --reverse | awk '{print $2}' | xargs -r kill -9
+  (
+    echo "PID	MEM(MB)	EXE	COMMAND"
+    ps -eo pid,rss,args --sort=-rss | awk '
+      NR <= 1 { next }
+      {
+        pid = $1
+        rss = $2
+        match($0, /^[ \t]*[0-9]+[ \t]+[0-9]+[ \t]+/)
+        args = substr($0, RLENGTH + 1)
+        exe = ""
+        cmd = "readlink -f /proc/" pid "/exe 2>/dev/null"
+        cmd | getline exe
+        close(cmd)
+        printf "%s\t%.1f\t%s\t%s\n", pid, rss/1024, exe, args
+      }
+    '
+  ) | fzf --header "Kill Process (Press enter to kill)" --header-lines 1 --reverse | awk -F'\t' '$1 ~ /^[0-9]+$/ {print $1}' | xargs -r kill -9
 }
