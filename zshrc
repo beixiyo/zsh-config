@@ -1,6 +1,6 @@
 # 环境变量与密钥：在所有 shell 中加载（脚本、cron、GUI 子进程等也能用到 PATH 等）
 source ~/.zsh/env.zsh
-source ~/.zsh/secrets.zsh
+[[ -f ~/.zsh/secret.zsh ]] && source ~/.zsh/secret.zsh
 
 # 以下仅在交互式 shell 中执行
 [[ -o interactive ]] || return
