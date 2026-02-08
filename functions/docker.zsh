@@ -16,9 +16,11 @@ _fd_img_format='table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}'
 #  F      Force 强制删除镜像并停止关联容器
 _fd_guide="Tab: 多选 | l:Logs | e:Exec | c:Copy | s:Stop | r:Run | R:Restart | d:Delete | i:Image | F:Force 强制删镜像+停容器"
 
-## 统一 Docker 面板：容器 + 镜像，Tab 多选，快捷键执行操作（内部逻辑在 docker-dispatch.zsh，仅子进程 source，不提升全局）
+## 统一 Docker 面板：容器 + 镜像，Tab 多选，快捷键执行操作（内部逻辑在 functions/docker-dispatch.zsh，仅子进程 source，不提升全局）
 dd() {
-  local data choice
+  local data choice _fd_src
+  _fd_src=~/.zsh/functions/docker-dispatch.zsh
+
   data=$(
     echo "=== CONTAINERS ==="
     sudo docker ps -a --format "$_fd_ps_format" | while IFS= read -r line; do echo "C	${line}"; done
@@ -26,20 +28,22 @@ dd() {
     echo "=== IMAGES ==="
     sudo docker images --format "$_fd_img_format" | while IFS= read -r line; do echo "I	${line}"; done
   )
+
   choice=$(echo "$data" | fzf -m --bind tab:toggle \
     --header "$_fd_guide" \
     --header-lines 0 \
-    --bind "l:execute(zsh -c 'source ~/.zsh/docker-dispatch.zsh 2>/dev/null; _fd_do logs \"\$@\"' _ {+} </dev/tty)+abort" \
-    --bind "e:execute(zsh -c 'source ~/.zsh/docker-dispatch.zsh 2>/dev/null; _fd_do exec \"\$@\"' _ {+} </dev/tty)+abort" \
-    --bind "c:execute(zsh -c 'source ~/.zsh/docker-dispatch.zsh 2>/dev/null; _fd_do copy \"\$@\"' _ {+})+abort" \
-    --bind "s:execute(zsh -c 'source ~/.zsh/docker-dispatch.zsh 2>/dev/null; _fd_do stop \"\$@\"' _ {+})+abort" \
-    --bind "r:execute(zsh -c 'source ~/.zsh/docker-dispatch.zsh 2>/dev/null; _fd_do run \"\$@\"' _ {+})+abort" \
-    --bind "R:execute(zsh -c 'source ~/.zsh/docker-dispatch.zsh 2>/dev/null; _fd_do restart \"\$@\"' _ {+})+abort" \
-    --bind "d:execute(zsh -c 'source ~/.zsh/docker-dispatch.zsh 2>/dev/null; _fd_do delete \"\$@\"' _ {+})+abort" \
-    --bind "i:execute(zsh -c 'source ~/.zsh/docker-dispatch.zsh 2>/dev/null; _fd_do image \"\$@\"' _ {+})+abort" \
-    --bind "F:execute(zsh -c 'source ~/.zsh/docker-dispatch.zsh 2>/dev/null; _fd_do force \"\$@\"' _ {+})+abort" \
+    --bind "l:execute(zsh -c 'source $_fd_src 2>/dev/null; _fd_do logs \"\$@\"' _ {+} </dev/tty)+abort" \
+    --bind "e:execute(zsh -c 'source $_fd_src 2>/dev/null; _fd_do exec \"\$@\"' _ {+} </dev/tty)+abort" \
+    --bind "c:execute(zsh -c 'source $_fd_src 2>/dev/null; _fd_do copy \"\$@\"' _ {+})+abort" \
+    --bind "s:execute(zsh -c 'source $_fd_src 2>/dev/null; _fd_do stop \"\$@\"' _ {+})+abort" \
+    --bind "r:execute(zsh -c 'source $_fd_src 2>/dev/null; _fd_do run \"\$@\"' _ {+})+abort" \
+    --bind "R:execute(zsh -c 'source $_fd_src 2>/dev/null; _fd_do restart \"\$@\"' _ {+})+abort" \
+    --bind "d:execute(zsh -c 'source $_fd_src 2>/dev/null; _fd_do delete \"\$@\"' _ {+})+abort" \
+    --bind "i:execute(zsh -c 'source $_fd_src 2>/dev/null; _fd_do image \"\$@\"' _ {+})+abort" \
+    --bind "F:execute(zsh -c 'source $_fd_src 2>/dev/null; _fd_do force \"\$@\"' _ {+})+abort" \
     | sed 's/^[CI]\t//' | awk -F'\t' '{print $1}'
   )
+
   [[ -n "$choice" ]] && echo "Selected: $choice"
 }
 
