@@ -3,8 +3,6 @@ export BROWSER="'/mnt/c/Program Files/Google/Chrome/Application/chrome.exe'"
 
 # 开源库 bin 目录
 PATH="$HOME/.local/bin:$PATH"
-# 个人 bin 目录
-PATH="$HOME/bin:$PATH"
 # 解决 root 下找不到 code（路径不对时用 which code 查看后替换）
 PATH="/mnt/c/Develop/cursor/resources/app/codeBin:$PATH"
 export PATH

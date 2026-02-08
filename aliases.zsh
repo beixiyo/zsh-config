@@ -31,7 +31,3 @@ alias top='btop'
 alias cat='bat'
 alias fzf='fzf --ansi'
 alias jq='jq -C'   # 终端下彩色输出
-
-# Scripts
-alias setProxy='source $HOME/bin/setProxy'
-alias unsetProxy='source $HOME/bin/unsetProxy'
