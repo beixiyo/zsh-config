@@ -1,6 +1,7 @@
 # Docker
 alias dps='sudo docker ps -a --format "table {{.ID}}\t{{.Image}}\t{{.Ports}}\t{{.Status}}\t{{.Names}}"'
 alias dis='sudo docker images'
+# 见 functions.zsh：dd 统一 Docker 操作面板
 
 # nvim
 alias vi='nvim'
@@ -29,6 +30,7 @@ alias ll='eza -l -a --icons --group-directories-first -h --time-style=long-iso -
 alias top='btop'
 alias cat='bat'
 alias fzf='fzf --ansi'
+alias jq='jq -C'   # 终端下彩色输出
 
 # Scripts
 alias setProxy='source $HOME/bin/setProxy'
