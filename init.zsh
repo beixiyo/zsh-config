@@ -13,7 +13,7 @@ eval "$(vfox activate zsh)"
 eval "$(zoxide init --cmd cd zsh)"
 
 # Fzf 集成：Ctrl+R 历史、Ctrl+T 文件、Alt+C 目录预览、ssh ** Tab 等
-source <(fzf --zsh)
+# 已移至 plugins/vi-mode.zsh 的 zvm_after_init 中，因 vi-mode 延迟 init 会覆盖 fzf 的绑定
 
 # Fzf 预览：cd/rm 用 eza 预览目录，code/vim 等用 bat 预览文件
 local -a preview_dir_cmds=(cd rm)
