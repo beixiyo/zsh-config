@@ -26,3 +26,6 @@ export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles"
 export HOMEBREW_API_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles/api"
 
 export EDITOR="code --wait"
+
+## Yazi
+export YAZI_CONFIG_HOME="$HOME/.zsh/yazi"
