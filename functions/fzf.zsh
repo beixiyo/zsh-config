@@ -14,9 +14,16 @@ _fs_opts=(
 )
 
 ## 打开方式提示与绑定：仅改此处即可统一 nvim/code
-_fzf_open_header="ENTER: nvim | CTRL-O: VSCode"
-_fzf_bind_file=( --bind "enter:execute(nvim {} < /dev/tty)" --bind "ctrl-o:execute(code {})" )
-_fzf_bind_file_line=( --bind "enter:execute(nvim +{2} {1} < /dev/tty)" --bind "ctrl-o:execute(code -g {1}:{2})" )
+## ENTER: 输出路径（fzf 默认行为），CTRL-O: VSCode，ALT-O: nvim
+_fzf_open_header="ENTER: 输出路径 | CTRL-O: VSCode | ALT-O: nvim"
+_fzf_bind_file=(
+  --bind "ctrl-o:execute(code {})"
+  --bind "alt-o:execute(nvim {} < /dev/tty)"
+)
+_fzf_bind_file_line=(
+  --bind "ctrl-o:execute(code -g {1}:{2})"
+  --bind "alt-o:execute(nvim +{2} {1} < /dev/tty)"
+)
 
 ## Helper: List files with optional dir and type filtering
 _fzf_list_files() {
@@ -41,29 +48,13 @@ _fzf_list_files() {
   fi
 }
 
-## Find File 在指定目录(默认当前)下查找文件/目录
+## Find File Open 选文件后 Alt-O 用 nvim 打开，Ctrl-O 用 VSCode 打开
 ff() {
-  _fzf_list_files "$@" | fzf --preview "$_ff_preview" --ansi
-}
-
-## Find String 在指定目录(默认当前)下搜内容
-fs() {
-  local dir="."
-  [[ -d "$1" ]] && dir="$1"
-  
-  fzf "${_fs_opts[@]}" \
-    --header "Search Content in $dir" \
-    --bind "start:reload:rg --column --line-number --no-heading --color=always --smart-case \"\" \"$dir\"" \
-    --bind "change:reload:rg --column --line-number --no-heading --color=always --smart-case {q} \"$dir\" || true"
-}
-
-## Find File Open 选文件后 ENTER 用 nvim 打开，Ctrl-O 用 VSCode 打开
-ffo() {
   _fzf_list_files "$@" | fzf --preview "$_ff_preview" --header "$_fzf_open_header" "${_fzf_bind_file[@]}" --ansi
 }
 
-## Find String Open 搜到内容后 ENTER 用 nvim 打开并跳到行，Ctrl-O 用 VSCode 打开
-fso() {
+## Find String Open 搜到内容后 Alt-O 用 nvim 打开并跳到行，Ctrl-O 用 VSCode 打开
+fs() {
   local dir="."
   [[ -d "$1" ]] && dir="$1"
 
