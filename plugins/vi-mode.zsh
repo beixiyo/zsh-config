@@ -13,6 +13,7 @@ ZVM_MODE_INDICATOR_INSERT='[I]'
 ZVM_MODE_INDICATOR_VISUAL='[V]'
 ZVM_MODE_INDICATOR_REPLACE='[R]'
 ZVM_SHOW_MODE_IN_PROMPT=true
+
 if [[ ! -d "$ZSH_PLUGIN_DIR/zsh-vi-mode" ]]; then
   git clone --depth=1 --single-branch --no-tags \
     https://github.com/jeffreytse/zsh-vi-mode \
