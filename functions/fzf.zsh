@@ -14,8 +14,8 @@ _fs_opts=(
 )
 
 ## 打开方式提示与绑定：仅改此处即可统一 nvim/code
-## ENTER: 输出路径（fzf 默认行为），CTRL-O: VSCode，ALT-O: nvim
-_fzf_open_header="ENTER: 输出路径 | CTRL-O: VSCode | ALT-O: nvim"
+## ENTER: 输出路径（fzf 默认行为），CTRL-O: VSCode，ALT-O: nvim，ALT-F: 仅文件，ALT-D: 仅目录
+_fzf_open_header="ENTER: 输出 | CTRL-O: Code | ALT-O: nvim | ALT-F: 文件 | ALT-D: 目录"
 _fzf_bind_file=(
   --bind "ctrl-o:execute(code {})"
   --bind "alt-o:execute(nvim {} < /dev/tty)"
@@ -50,7 +50,16 @@ _fzf_list_files() {
 
 ## Find File Open 选文件后 Alt-O 用 nvim 打开，Ctrl-O 用 VSCode 打开
 ff() {
-  _fzf_list_files "$@" | fzf --preview "$_ff_preview" --header "$_fzf_open_header" "${_fzf_bind_file[@]}" --ansi
+  local dir="."
+  [[ -d "$1" ]] && dir="$1"
+
+  _fzf_list_files "$@" | fzf \
+    --preview "$_ff_preview" \
+    --header "$_fzf_open_header" \
+    "${_fzf_bind_file[@]}" \
+    --ansi \
+    --bind "alt-f:reload(fd . \"$dir\" --type f --color=always --follow --exclude .git || find \"$dir\" -type f -not -path '*/.*')" \
+    --bind "alt-d:reload(fd . \"$dir\" --type d --color=always --follow --exclude .git || find \"$dir\" -type d -not -path '*/.*')"
 }
 
 ## Find String Open 搜到内容后 Alt-O 用 nvim 打开并跳到行，Ctrl-O 用 VSCode 打开
