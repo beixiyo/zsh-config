@@ -18,3 +18,9 @@ export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 export FZF_DEFAULT_OPTS="--layout=reverse --border --ansi \
 --color='fg:#ebdbb2,bg:#282828,header:#fabd2f,info:#83a598,pointer:#fb4934' \
 --color='marker:#fe8019,fg+:#ebdbb2,bg+:#3c3836,hl:#8ec07c,hl+:#b8bb26'"
+
+## Brew
+export HOMEBREW_BREW_GIT_REMOTE="https://mirrors.ustc.edu.cn/brew.git"
+export HOMEBREW_CORE_GIT_REMOTE="https://mirrors.ustc.edu.cn/homebrew-core.git"
+export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles"
+export HOMEBREW_API_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles/api"
