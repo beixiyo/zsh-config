@@ -2,8 +2,8 @@
 
 ## 检测 Node 包管理器：优先 lock 文件，否则按 bun → pnpm → yarn → npm（需在项目根目录调用）
 get_pm() {
-  [[ -f bun.lockb || -f bun.lock ]] && command -v bun &>/dev/null && { echo bun; return }
   [[ -f pnpm-lock.yaml ]] && command -v pnpm &>/dev/null && { echo pnpm; return }
+  [[ -f bun.lockb || -f bun.lock ]] && command -v bun &>/dev/null && { echo bun; return }
   [[ -f yarn.lock ]] && command -v yarn &>/dev/null && { echo yarn; return }
   for p in bun pnpm yarn; do
     command -v $p &>/dev/null && { echo $p; return }
