@@ -40,16 +40,17 @@ _fd_img_format='table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}'
 
 ## 操作指南（语义化快捷键）
 #  Tab    多选
-#  l      Logs  看日志（-f，仅容器）
-#  e      Exec  进入容器（仅容器）
-#  c      Copy  复制 ID 到剪贴板
-#  s      Stop  停止容器
-#  r      Run   运行容器
-#  R      Restart 重启容器
-#  d      Delete 删除容器（先 stop 再 rm）
-#  i      delete Image 删除镜像
-#  F      Force 强制删除镜像并停止关联容器
-_fd_guide="Tab: 多选 | l:Logs | e:Exec | c:Copy | s:Stop | r:Run | R:Restart | d:Delete | i:Image | F:Force 强制删镜像+停容器"
+#  l      Logs     看日志（-f，仅容器）
+#  e      Exec     进入容器（仅容器）
+#  c      Copy     复制 ID 到剪贴板
+#  s      Stop     停止容器
+#  r      Run      运行容器
+#  R      Restart  重启容器
+#  d      Rm-Cont  删除容器（先 stop 再 rm）
+#  i      Rm-Img   删除镜像 (rmi)
+#  F      Force    强制删除镜像及其关联容器
+_fd_guide="Tab:多选 | l:Logs | e:Exec | c:Copy-ID | s:Stop | r:Run | R:Restart
+d:Rm-Cont(Stop+Rm) | i:Rm-Img(rmi) | F:Rm-Img-Force(Img+Conts)"
 
 ## 统一 Docker 面板：容器 + 镜像，Tab 多选，快捷键执行操作（内部逻辑在 functions/docker-dispatch.zsh，仅子进程 source，不提升全局）
 dd() {
