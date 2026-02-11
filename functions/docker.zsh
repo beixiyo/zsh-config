@@ -1,3 +1,38 @@
+# Docker Hub v2 API
+# - repo 形如: clickhouse/clickhouse-server
+# - tag  形如: 26.1.2 / latest
+#
+# 用法:
+#   dinfo clickhouse/clickhouse-server 26.1.2
+#   dinfo clickhouse/clickhouse-server 26.1.2 arm64 linux
+#
+# 输出(依次):
+#   1) 仓库信息(JSON)
+#   2) tag 信息(JSON)
+#   3) 当前 arch/os 下的 digest + size(MiB)
+dinfo() {
+  local repo="${1:?repo required (e.g. clickhouse/clickhouse-server)}"
+  local tag="${2:?tag required (e.g. 26.1.2)}"
+  local arch="${3:-amd64}"
+  local os="${4:-linux}"
+
+  echo "== repo: ${repo} =="
+  curl -fsSL "https://hub.docker.com/v2/repositories/${repo}" | jq .
+  echo
+
+  echo "== tag: ${repo}:${tag} =="
+  curl -fsSL "https://hub.docker.com/v2/repositories/${repo}/tags/${tag}" | jq .
+  echo
+
+  echo "== images (os=${os}, arch=${arch}) =="
+  curl -fsSL "https://hub.docker.com/v2/repositories/${repo}/tags/${tag}" \
+  | jq -r --arg arch "$arch" --arg os "$os" '
+      .images[]
+      | select(.architecture==$arch and .os==$os)
+      | "\(.digest)  \(.size/1024/1024) MiB"
+    '
+}
+
 # Docker + fzf（统一查看与操作）
 _fd_ps_format='table {{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Names}}'
 _fd_ps_running='table {{.ID}}\t{{.Image}}\t{{.Names}}'
