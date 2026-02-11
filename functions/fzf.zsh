@@ -14,8 +14,9 @@ _fs_opts=(
 )
 
 ## 打开方式提示与绑定：仅改此处即可统一 nvim/code
-## ENTER: 输出路径（fzf 默认行为），CTRL-O: VSCode，ALT-O: nvim，ALT-F: 仅文件，ALT-D: 仅目录
-_fzf_open_header="ENTER: 输出 | CTRL-O: Code | ALT-O: nvim | ALT-F: 文件 | ALT-D: 目录"
+## 按系统设置修饰键显示名（Mac=Option，其它=Alt），header 随环境变化
+[[ "$(uname -s)" == Darwin ]] && _fzf_mod=Option || _fzf_mod=Alt
+_fzf_open_header="ENTER: 输出 | CTRL-O: Code | ${_fzf_mod}-O: nvim | ${_fzf_mod}-F: 文件 | ${_fzf_mod}-D: 目录"
 _fzf_bind_file=(
   --bind "ctrl-o:execute(code {})"
   --bind "alt-o:execute(nvim {} < /dev/tty)"
