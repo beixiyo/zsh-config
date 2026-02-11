@@ -11,7 +11,13 @@
 #   2) tag 信息(JSON)
 #   3) 当前 arch/os 下的 digest + size(MiB)
 dinfo() {
-  local repo="${1:?repo required (e.g. clickhouse/clickhouse-server)}"
+  if [[ -z "$1" || "$1" == "-h" || "$1" == "--help" ]]; then
+    echo "Usage: dinfo <repo> <tag> [arch] [os]"
+    echo "Example: dinfo clickhouse/clickhouse-server 26.1.2 arm64 linux"
+    return 0
+  fi
+
+  local repo="$1"
   local tag="${2:?tag required (e.g. 26.1.2)}"
   local arch="${3:-amd64}"
   local os="${4:-linux}"
