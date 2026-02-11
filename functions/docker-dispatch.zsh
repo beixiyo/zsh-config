@@ -72,12 +72,12 @@ _fd_do() {
       cids=($(_fd_parse_ids container "$@"))
       if [[ ${#cids[@]} -gt 0 ]]; then
         echo "$cids" | xargs -r sudo docker stop 2>/dev/null
-        echo "$cids" | xargs -r sudo docker rm
+        echo "$cids" | xargs -r sudo docker rm 2>/dev/null
       fi
       ;;
     image)
       iids=($(_fd_parse_ids image "$@"))
-      [[ ${#iids[@]} -gt 0 ]] && echo "$iids" | xargs -r sudo docker rmi
+      [[ ${#iids[@]} -gt 0 ]] && echo "$iids" | xargs -r sudo docker rmi 2>/dev/null
       ;;
     force)
       iids=($(_fd_parse_ids image "$@"))
