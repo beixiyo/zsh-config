@@ -25,7 +25,7 @@ export HOMEBREW_CORE_GIT_REMOTE="https://mirrors.ustc.edu.cn/homebrew-core.git"
 export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles"
 export HOMEBREW_API_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles/api"
 
-export EDITOR="code --wait"
+export EDITOR="code"
 
 ## Yazi
 export YAZI_CONFIG_HOME="$HOME/.zsh/yazi"
