@@ -14,29 +14,66 @@ dinfo() {
   if [[ -z "$1" || "$1" == "-h" || "$1" == "--help" ]]; then
     echo "Usage: dinfo <repo> <tag> [arch] [os]"
     echo "Example: dinfo clickhouse/clickhouse-server 26.1.2 arm64 linux"
+    echo "Example: dinfo postgres 18.1  # 会自动尝试 library/postgres"
     return 0
   fi
 
-  local repo="$1"
+  local repo_arg="$1"
   local tag="${2:?tag required (e.g. 26.1.2)}"
   local arch="${3:-amd64}"
   local os="${4:-linux}"
+  local repo="$repo_arg"
+  local repo_json
 
   echo "== repo: ${repo} =="
-  curl -fsSL "https://hub.docker.com/v2/repositories/${repo}" | jq .
+  if ! repo_json=$(curl -fsSL "https://hub.docker.com/v2/repositories/${repo}" 2>/dev/null); then
+    # 网络级失败，若是短名则尝试官方镜像 library/<name>
+    if [[ "$repo_arg" != */* ]]; then
+      repo="library/${repo_arg}"
+      echo "仓库 ${repo_arg} 获取失败，尝试官方镜像: ${repo}"
+      if ! repo_json=$(curl -fsSL "https://hub.docker.com/v2/repositories/${repo}" 2>/dev/null); then
+        echo "仍然无法获取仓库信息: ${repo_arg}（也尝试了 ${repo}）"
+        return 1
+      fi
+    else
+      echo "获取仓库信息失败: ${repo}"
+      return 1
+    fi
+  fi
+
+  # 对于短名，/repositories/<name> 实际是 search API，count==0 说明没找到，自动切换到 library/<name>
+  if [[ "$repo_arg" != */* ]]; then
+    if printf '%s\n' "$repo_json" | jq -e '.count? == 0 and (.results | type=="array")' >/dev/null 2>&1; then
+      local repo_library="library/${repo_arg}"
+      echo "未找到仓库 ${repo_arg}，尝试官方镜像: ${repo_library}"
+      repo="$repo_library"
+      if ! repo_json=$(curl -fsSL "https://hub.docker.com/v2/repositories/${repo}" 2>/dev/null); then
+        echo "仍然未找到仓库: ${repo_arg}（也尝试了 ${repo_library}）"
+        return 1
+      fi
+    fi
+  fi
+
+  printf '%s\n' "$repo_json" | jq .
   echo
 
   echo "== tag: ${repo}:${tag} =="
-  curl -fsSL "https://hub.docker.com/v2/repositories/${repo}/tags/${tag}" | jq .
+  if ! curl -fsSL "https://hub.docker.com/v2/repositories/${repo}/tags/${tag}" | jq .; then
+    echo "获取 tag 信息失败: ${repo}:${tag}"
+    return 1
+  fi
   echo
 
   echo "== images (os=${os}, arch=${arch}) =="
-  curl -fsSL "https://hub.docker.com/v2/repositories/${repo}/tags/${tag}" \
-  | jq -r --arg arch "$arch" --arg os "$os" '
-      .images[]
-      | select(.architecture==$arch and .os==$os)
-      | "\(.digest)  \(.size/1024/1024) MiB"
-    '
+  if ! curl -fsSL "https://hub.docker.com/v2/repositories/${repo}/tags/${tag}" \
+    | jq -r --arg arch "$arch" --arg os "$os" '
+        .images[]
+        | select(.architecture==$arch and .os==$os)
+        | "\(.digest)  \(.size/1024/1024) MiB"
+      ' 2>/dev/null; then
+    echo "获取镜像列表失败: ${repo}:${tag} (os=${os}, arch=${arch})"
+    return 1
+  fi
 }
 
 # Docker + fzf（统一查看与操作）
