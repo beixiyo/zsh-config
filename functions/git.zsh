@@ -5,8 +5,9 @@
 
 # 统一预览配置
 _git_preview_window="right:75%:border-left:wrap"
-# 滚动绑定：使用 Ctrl-j/k 类似 Vim 习惯滚动预览
-_git_scroll_binds="ctrl-d:preview-page-down,ctrl-u:preview-page-up,ctrl-j:preview-down,ctrl-k:preview-up"
+# 滚动绑定：使用 Ctrl-j/k 类似 Vim 习惯滚动预览；Alt-j/k 多行大步滚动
+# fzf 不支持 preview-down,10 这种带参数写法，只能通过重复 action 实现“多行”
+_git_scroll_binds="ctrl-j:preview-down,ctrl-k:preview-up,alt-j:preview-down+preview-down+preview-down+preview-down+preview-down,alt-k:preview-up+preview-up+preview-up+preview-up+preview-up"
 
 function gdiff() {
   if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
@@ -25,7 +26,7 @@ function gdiff() {
       bat --color=always --style=numbers "$file" 2>/dev/null || echo "No diff available for $file"
     fi'
 
-  local header=$'ENTER: 打开\nCTRL-S: Stage | CTRL-U: Unstage\nCTRL-J/K: 滚动预览'
+  local header=$'ENTER: 打开\nCTRL-S: Stage | CTRL-U: Unstage\nCTRL-J/K: 滚动 | ALT-J/K: 快速滚动'
 
   local gen_list='git -c core.quotepath=false status --short | awk "{ s=substr(\$0,1,3); f=substr(\$0,4); print s \"\t\" f }"'
 
