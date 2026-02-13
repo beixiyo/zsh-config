@@ -6,12 +6,15 @@
 
 ```bash
 # Homebrew
-brew install bat fzf fd ripgrep tree eza zoxide btop git-delta safe-rm
+brew install bat fzf fd ripgrep tree eza zoxide btop git-delta safe-rm bun
 
 # =============================================
 
 # Debian/Ubuntu
 sudo apt install -y bat fzf fd-find ripgrep tree btop safe-rm
+
+## bun
+curl -fsSL https://bun.sh/install | bash
 
 ## eza（https://eza.rocks/）
 sudo apt install -y gpg && \
@@ -22,10 +25,10 @@ sudo chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.lis
 sudo apt update && \
 sudo apt install -y eza
 
-## zoxide 增强 cd
+## zoxide 增强 cd https://crates.io/crates/zoxide
 curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
 
-# Git diff 高亮
+# Git diff 高亮 https://github.com/dandavison/delta
 wget https://github.com/dandavison/delta/releases/download/0.18.2/git-delta_0.18.2_amd64.deb -O git-delta.deb && \
 sudo dpkg -i git-delta.deb
 
@@ -116,6 +119,7 @@ echo 'source ~/.zsh/zshrc' > ~/.zshrc
 | [safe-rm](https://github.com/kaelzhang/safe-rm) | rm 安全包装（别名 `rm`） |
 | [NeoVim](https://github.com/neovim/neovim) | 编辑器 |
 | [Yazi](https://github.com/sxyazi/yazi) | 可选；文件管理器，配置在 `~/.zsh/yazi` |
+| [Bun](https://bun.sh/) | 运行 `functions/bun/*.ts` 中的 TypeScript 脚本 |
 
 ---
 
