@@ -5,10 +5,12 @@
 
 # 统一预览配置
 _git_preview_window="right:75%:border-left:wrap"
-# 滚动绑定：键位来自 env（fzfCmdBind/fzfOptionBind）；Ctrl-j/k 滚动，Option/Alt-j/k 多行大步滚动
-# fzf 不支持 preview-down,10 这种带参数写法，只能通过重复 action 实现“多行”
-_git_scroll_binds="${fzfCmdBind}-j:preview-down,${fzfCmdBind}-k:preview-up,${fzfOptionBind}-j:preview-down+preview-down+preview-down+preview-down+preview-down,${fzfOptionBind}-k:preview-up+preview-up+preview-up+preview-up+preview-up"
-_git_option_label="${(C)optionKey}"
+
+# 使用默认值以防环境变量未设置
+_fzf_cmd="${fzfCmdBind:-ctrl}"
+_fzf_opt="${fzfOptionBind:-alt}"
+_git_scroll_binds="${_fzf_cmd}-j:preview-down,${_fzf_cmd}-k:preview-up,${_fzf_opt}-j:preview-down+preview-down+preview-down+preview-down+preview-down,${_fzf_opt}-k:preview-up+preview-up+preview-up+preview-up+preview-up"
+_git_option_label="${(C)${optionKey:-alt}}"
 
 function gdiff() {
   if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
@@ -30,15 +32,18 @@ function gdiff() {
   local header="ENTER: 打开"$'\n'"CTRL-S: Stage | CTRL-U: Unstage"$'\n'"CTRL-J/K: 滚动 | ${_git_option_label}-J/K: 快速滚动"
 
   # 列: icon \t status \t path；按 path 排序使列表顺序稳定，暂存/取消暂存时仅该行图标变化、行位置不变，避免 reload 后 fzf 光标错位
-  local gen_list='git -c core.quotepath=false status --short | awk "
+  # 优化：剥离 git status 输出中的引号，并修正 sort 的 tab 分隔符
+  local gen_list="git -c core.quotepath=false status --short | awk '
     {
       s = substr(\$0, 1, 3)
       f = substr(\$0, 4)
+      gsub(/^[ \\t]+|[ \\t]+\$/, \"\", f)
+      if (f ~ /^\"/) { f = substr(f, 2, length(f)-2); gsub(/\\\\/, \"\", f) }
       idx = substr(s, 1, 1)   # index
       if (idx != \" \" && idx != \"?\") { icon = \"\357\220\225\" }
       else { icon = \"\357\214\264\" }
-      print icon \"\t\" s \"\t\" f
-    }" | sort -t"\t" -k3,3'
+      printf \"%s\\t%s\\t%s\\n\", icon, s, f
+    }' | sort -t\$'\\t' -k3,3"
 
   eval "$gen_list" | fzf --ansi \
     --header "$header" \
@@ -49,17 +54,18 @@ function gdiff() {
     --preview "$preview_cmd" \
     --preview-window "$_git_preview_window" \
     --bind "$_git_scroll_binds" \
-    --bind "${fzfCmdBind}-s:execute(git add -- {3})+reload($gen_list)" \
-    --bind "${fzfCmdBind}-u:execute(git reset -- {3})+reload($gen_list)" \
+    --bind "${_fzf_cmd}-s:execute(git add -- {3})+reload:${gen_list}" \
+    --bind "${_fzf_cmd}-u:execute(git reset -- {3})+reload:${gen_list}" \
     --bind "enter:execute(${EDITOR:-nvim} {3} < /dev/tty)+abort"
 }
+
 
 # 浏览 Git Log 并查看详情
 function glog() {
   local log_format="%C(auto)%h%d %s %C(black)%C(bold)%cr"
   git log --graph --color=always --format="$log_format" "$@" | \
   fzf --ansi --no-sort --reverse --tiebreak=index \
-    --preview "echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs -I % sh -c 'git show --color=always \"\$1\" 2>/dev/null | delta --width=\${FZF_PREVIEW_COLUMNS:-80}' _ %" \
+    --preview "git show --color=always \$(echo {q} | grep -o '[a-f0-9]\{7,40\}' | head -1) 2>/dev/null | delta --width=\${FZF_PREVIEW_COLUMNS:-80}" \
     --preview-window "$_git_preview_window" \
     --bind "$_git_scroll_binds" \
     --header "CTRL-J/K: 滚动预览（${_git_option_label}-J/K: 快速滚动）"
