@@ -15,9 +15,11 @@ export PATH
 ## fzf --ansi 使用彩色输出，如果配合 fd --color=always 即可实现
 export FZF_DEFAULT_COMMAND='fd --type f --color=always --strip-cwd-prefix --hidden --follow --exclude .git --exclude node_modules'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+# fzf 配色：对齐 Pretty Dark / Tokyo Night（与 Zed 主题一致）
+# 可调项: fg/bg=正文/背景, border=边框, header=标题, info=计数, pointer=当前行, marker=多选, fg+/bg+=选中行, hl/hl+=匹配高亮
 export FZF_DEFAULT_OPTS="--layout=reverse --border --ansi \
---color='fg:#ebdbb2,bg:#282828,header:#fabd2f,info:#83a598,pointer:#fb4934' \
---color='marker:#fe8019,fg+:#ebdbb2,bg+:#3c3836,hl:#8ec07c,hl+:#b8bb26'"
+--color='fg:#c2c2c2,bg:#191815,border:#3e4452,header:#d19a66,info:#7a849c,pointer:#e05561' \
+--color='marker:#d18f52,fg+:#c2c2c2,bg+:#23262c,hl:#98c379,hl+:#a5e075'"
 
 ## Brew
 export HOMEBREW_BREW_GIT_REMOTE="https://mirrors.ustc.edu.cn/brew.git"

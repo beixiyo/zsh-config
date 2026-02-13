@@ -97,7 +97,7 @@ fs() {
 
   fzf "${_fs_opts[@]}" \
     --preview-window "right:60%:border-left:+{2}-10" \
-    --header "$_fzf_base_header"$'\n'"搜索目录: $dir" \
+    --header "$_fzf_base_header" \
     "${_fzf_bind_file_line[@]}" \
     --bind "start:reload:rg --column --line-number --no-heading --color=always --smart-case \"\" \"$dir\"" \
     --bind "change:reload:rg --column --line-number --no-heading --color=always --smart-case {q} \"$dir\" || true"
