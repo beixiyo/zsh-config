@@ -13,19 +13,21 @@ _fs_opts=(
   --preview-window "right:60%:border-left"
 )
 
-## 打开方式提示与绑定：仅改此处即可统一 nvim/code
-## 按系统设置修饰键显示名（Mac=Option，其它=Alt），header 随环境变化
-[[ "$(uname -s)" == Darwin ]] && _fzf_mod=Option || _fzf_mod=Alt
-_fzf_base_header="ENTER: 确认 | CTRL-O: Code | ${_fzf_mod}-O: nvim"
-_fzf_ff_header="${_fzf_base_header}"$'\n'"${_fzf_mod}-F: 文件 | ${_fzf_mod}-D: 目录 | ${_fzf_mod}-A: 全部"
+## 打开方式提示与绑定：修饰键来自 env
+## header：fzf 不支持 cmd，实际按的是 ctrl，故 Code 用 Ctrl；Option/Alt 仍按平台显示
+_fzf_option="${(C)optionKey}"
+_fzf_base_header="ENTER: 确认"$'\n'"CTRL-O: Code | ${_fzf_option}-O: nvim"
+_fzf_fs_header="${_fzf_base_header}"$'\n'"${_fzf_option}-C: 复制路径:行号"
+_fzf_ff_header="${_fzf_base_header}"$'\n'"${_fzf_option}-F: 文件 | ${_fzf_option}-D: 目录 | ${_fzf_option}-A: 全部"
 
 _fzf_bind_file=(
-  --bind "ctrl-o:execute(code {})"
-  --bind "alt-o:execute(nvim {} < /dev/tty)"
+  --bind "${fzfCmdBind}-o:execute(code {})"
+  --bind "${fzfOptionBind}-o:execute(nvim {} < /dev/tty)"
 )
 _fzf_bind_file_line=(
-  --bind "ctrl-o:execute(code -g {1}:{2})"
-  --bind "alt-o:execute(nvim +{2} {1} < /dev/tty)"
+  --bind "${fzfCmdBind}-o:execute(code -g {1}:{2})"
+  --bind "${fzfOptionBind}-o:execute(nvim +{2} {1} < /dev/tty)"
+  --bind "${fzfOptionBind}-c:execute(echo {1}:{2} | pbcopy)"
 )
 
 ## Helper: List files with optional dir and type filtering
@@ -59,7 +61,7 @@ _fzf_list_files() {
 ## Find File Open 选文件后 Alt-O 用 nvim 打开，Ctrl-O 用 VSCode 打开
 ff() {
   local dir="."
-  local type_flag="-d" # 默认仅展示目录
+  local type_flag="" # 默认仅展示目录
   local args=()
 
   while [[ $# -gt 0 ]]; do
@@ -85,9 +87,9 @@ ff() {
     --header "$_fzf_ff_header" \
     "${_fzf_bind_file[@]}" \
     --ansi \
-    --bind "alt-f:reload(fd . \"$dir\" --type f --color=always --follow --exclude .git | sort -V || find \"$dir\" -type f -not -path '*/.*' | sort -V)" \
-    --bind "alt-d:reload(fd . \"$dir\" --type d --color=always --follow --exclude .git | sort -V || find \"$dir\" -type d -not -path '*/.*' | sort -V)" \
-    --bind "alt-a:reload(fd . \"$dir\" --color=always --follow --exclude .git | sort -V || find \"$dir\" -not -path '*/.*' | sort -V)"
+    --bind "${fzfOptionBind}-f:reload(fd . \"$dir\" --type f --color=always --follow --exclude .git | sort -V || find \"$dir\" -type f -not -path '*/.*' | sort -V)" \
+    --bind "${fzfOptionBind}-d:reload(fd . \"$dir\" --type d --color=always --follow --exclude .git | sort -V || find \"$dir\" -type d -not -path '*/.*' | sort -V)" \
+    --bind "${fzfOptionBind}-a:reload(fd . \"$dir\" --color=always --follow --exclude .git | sort -V || find \"$dir\" -not -path '*/.*' | sort -V)"
 }
 
 ## Find String Open 搜到内容后 Alt-O 用 nvim 打开并跳到行，Ctrl-O 用 VSCode 打开
@@ -97,7 +99,7 @@ fs() {
 
   fzf "${_fs_opts[@]}" \
     --preview-window "right:60%:border-left:+{2}-10" \
-    --header "$_fzf_base_header" \
+    --header "$_fzf_fs_header" \
     "${_fzf_bind_file_line[@]}" \
     --bind "start:reload:rg --column --line-number --no-heading --color=always --smart-case \"\" \"$dir\"" \
     --bind "change:reload:rg --column --line-number --no-heading --color=always --smart-case {q} \"$dir\" || true"
