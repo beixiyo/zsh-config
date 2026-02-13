@@ -17,7 +17,7 @@ function gdiff() {
 
   # Preview command: 动态判断。如果有 diff 则用 delta，否则（如未跟踪或新文件无 diff）用 bat
   local preview_cmd='
-    file={2}
+    file={3}
     diff=$(git diff --color=always HEAD -- "$file" 2>/dev/null)
     if [[ -n "$diff" ]]; then
       # FZF_PREVIEW_COLUMNS 可能为空，给 delta 一个安全的默认宽度
@@ -28,20 +28,31 @@ function gdiff() {
 
   local header=$'ENTER: 打开\nCTRL-S: Stage | CTRL-U: Unstage\nCTRL-J/K: 滚动 | ALT-J/K: 快速滚动'
 
-  local gen_list='git -c core.quotepath=false status --short | awk "{ s=substr(\$0,1,3); f=substr(\$0,4); print s \"\t\" f }"'
+  # 列: icon(已暂存/未暂存) \t status \t path；--with-nth=1,3 只显示 icon+path
+  local gen_list='git -c core.quotepath=false status --short | awk "
+    {
+      s = substr(\$0, 1, 3)
+      f = substr(\$0, 4)
+      idx = substr(s, 1, 1)   # index
+      wrk = substr(s, 2, 1)   # worktree
+      # 有暂存用 plus_box，否则用 minus_box（未暂存或未跟踪）
+      if (idx != \" \" && idx != \"?\") { icon = \"\357\220\225\" }
+      else { icon = \"\357\214\264\" }
+      print icon \"\t\" s \"\t\" f
+    }"'
 
   eval "$gen_list" | fzf --ansi \
     --header "$header" \
     --header-first \
-    --with-nth=2 \
+    --with-nth=1,3 \
     --delimiter="\t" \
     --no-multi \
     --preview "$preview_cmd" \
     --preview-window "$_git_preview_window" \
     --bind "$_git_scroll_binds" \
-    --bind "ctrl-s:execute(git add -- {2})+reload($gen_list)" \
-    --bind "ctrl-u:execute(git reset -- {2})+reload($gen_list)" \
-    --bind "enter:execute(${EDITOR:-nvim} {2} < /dev/tty)+abort"
+    --bind "ctrl-s:execute(git add -- {3})+reload($gen_list)" \
+    --bind "ctrl-u:execute(git reset -- {3})+reload($gen_list)" \
+    --bind "enter:execute(${EDITOR:-nvim} {3} < /dev/tty)+abort"
 }
 
 # 浏览 Git Log 并查看详情
