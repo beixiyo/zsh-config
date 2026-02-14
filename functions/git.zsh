@@ -31,12 +31,11 @@ function gdiff() {
 
   local header="ENTER: 打开"$'\n'"CTRL-S: Stage | CTRL-U: Unstage"$'\n'"CTRL-J/K: 切换文件 | ${_git_option_label}-J/K: 滚动预览"
 
-  # 列: icon \t status \t path；数据源用 Bun，输出完即退出不占 TTY，reload 时重新跑 Bun
+  # 列: icon \t status \t path；数据源用 Bun，输出完即退出不占 TTY，reload 时重新跑 Bun。路径用单引号，拼进 reload 时不会截断外层双引号
   local _dir="${${(%):-%x}:A:h}"
-  local gen_list="bun run \"$_dir/bun/src/git.ts\" 2>/dev/null"
+  local gen_list="bun run '$_dir/bun/src/git.ts' 2>/dev/null < /dev/null"
 
-  # 左侧 stdin 重定向到 /dev/null，避免与 fzf 争用 TTY（否则按键会概率性被 Bun/Shell 读走并回显为 ^[[B）
-  eval "$gen_list" < /dev/null | fzf --ansi \
+  eval "$gen_list" | fzf --ansi \
     --header "$header" \
     --header-first \
     --with-nth=1,3 \

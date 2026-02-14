@@ -6,8 +6,8 @@ _ff_preview="if [ -d {} ]; then eza --tree --level=3 --color=always --icons --gr
 _fs_preview="bat --color=always --style=numbers --theme=base16 --highlight-line {2} {1}"
 _fs_opts=(
   --disabled --ansi
-  --bind "start:reload:rg --column --line-number --no-heading --color=always --smart-case \"\""
-  --bind "change:reload:rg --column --line-number --no-heading --color=always --smart-case {q} || true"
+  --bind "start:reload:rg --column --line-number --no-heading --color=always --smart-case \"\" < /dev/null"
+  --bind "change:reload:rg --column --line-number --no-heading --color=always --smart-case {q} || true < /dev/null"
   --delimiter :
   --preview "$_fs_preview"
   --preview-window "right:60%:border-left"
@@ -16,7 +16,10 @@ _fs_opts=(
 ## 打开方式提示与绑定：修饰键来自 env
 ## header：fzf 不支持 cmd，实际按的是 ctrl，故 Code 用 Ctrl；Option/Alt 仍按平台显示
 _fzf_option="${(C)optionKey}"
-_fzf_base_header="ENTER: 确认"$'\n'"CTRL-O: Code | ${_fzf_option}-O: nvim"
+_fzf_cmd="${fzfCmdBind:-ctrl}"
+_fzf_opt="${fzfOptionBind:-alt}"
+_fzf_scroll_binds="${_fzf_cmd}-j:down,${_fzf_cmd}-k:up,${_fzf_opt}-j:preview-down+preview-down+preview-down+preview-down+preview-down,${_fzf_opt}-k:preview-up+preview-up+preview-up+preview-up+preview-up"
+_fzf_base_header="ENTER: 确认"$'\n'"CTRL-O: Code | ${_fzf_option}-O: nvim"$'\n'"CTRL-J/K: 切换 | ${_fzf_option}-J/K: 滚动预览"
 _fzf_fs_header="${_fzf_base_header}"$'\n'"${_fzf_option}-C: 复制路径:行号"
 _fzf_ff_header="${_fzf_base_header}"$'\n'"${_fzf_option}-F: 文件 | ${_fzf_option}-D: 目录 | ${_fzf_option}-A: 全部"
 
@@ -82,14 +85,15 @@ ff() {
   [[ -n "$type_flag" ]] && list_args+=("$type_flag")
   list_args+=("$dir")
 
-  _fzf_list_files "${list_args[@]}" | fzf \
+  _fzf_list_files "${list_args[@]}" < /dev/null | fzf \
     --preview "$_ff_preview" \
     --header "$_fzf_ff_header" \
+    --bind "$_fzf_scroll_binds" \
     "${_fzf_bind_file[@]}" \
     --ansi \
-    --bind "${fzfOptionBind}-f:reload(fd . \"$dir\" --type f --color=always --follow --exclude .git | sort -V || find \"$dir\" -type f -not -path '*/.*' | sort -V)" \
-    --bind "${fzfOptionBind}-d:reload(fd . \"$dir\" --type d --color=always --follow --exclude .git | sort -V || find \"$dir\" -type d -not -path '*/.*' | sort -V)" \
-    --bind "${fzfOptionBind}-a:reload(fd . \"$dir\" --color=always --follow --exclude .git | sort -V || find \"$dir\" -not -path '*/.*' | sort -V)"
+    --bind "${fzfOptionBind}-f:reload(fd . \"$dir\" --type f --color=always --follow --exclude .git < /dev/null | sort -V || find \"$dir\" -type f -not -path '*/.*' < /dev/null | sort -V)" \
+    --bind "${fzfOptionBind}-d:reload(fd . \"$dir\" --type d --color=always --follow --exclude .git < /dev/null | sort -V || find \"$dir\" -type d -not -path '*/.*' < /dev/null | sort -V)" \
+    --bind "${fzfOptionBind}-a:reload(fd . \"$dir\" --color=always --follow --exclude .git < /dev/null | sort -V || find \"$dir\" -not -path '*/.*' < /dev/null | sort -V)"
 }
 
 ## Find String Open 搜到内容后 Alt-O 用 nvim 打开并跳到行，Ctrl-O 用 VSCode 打开
@@ -100,7 +104,8 @@ fs() {
   fzf "${_fs_opts[@]}" \
     --preview-window "right:60%:border-left:+{2}-10" \
     --header "$_fzf_fs_header" \
+    --bind "$_fzf_scroll_binds" \
     "${_fzf_bind_file_line[@]}" \
-    --bind "start:reload:rg --column --line-number --no-heading --color=always --smart-case \"\" \"$dir\"" \
-    --bind "change:reload:rg --column --line-number --no-heading --color=always --smart-case {q} \"$dir\" || true"
+    --bind "start:reload:rg --column --line-number --no-heading --color=always --smart-case \"\" \"$dir\" < /dev/null" \
+    --bind "change:reload:rg --column --line-number --no-heading --color=always --smart-case {q} \"$dir\" || true < /dev/null"
 }
