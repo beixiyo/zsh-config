@@ -301,6 +301,7 @@ async function main() {
       printUsage()
       process.exit(1)
   }
+  process.exit(0)
 }
 
 main()

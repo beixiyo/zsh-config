@@ -173,6 +173,7 @@ async function main() {
     else if (sub === 'unset') {
       process.stdout.write(buildUnsetProxyShell())
     }
+    process.exit(0)
   }
   catch (err) {
     console.error((err as Error).message)

@@ -53,21 +53,14 @@ echo 'source ~/.zsh/zshrc' > ~/.zshrc
 
 ```
 ~/.zsh/
-├── zshrc                 # 主入口：env → (secret) → plugins → init → aliases → functions → history → completions → keybindings → prompt
+├── AGENTS.md              # 开发规范：Zsh (UI/交互) & Bun (逻辑/计算) 协作指南
+├── functions/
+│   ├── bun/src            # Bun 实现的业务逻辑 (TypeScript)
+│   ├── index.zsh          # 函数加载总入口
+│   └── ...                # 各模块的 Zsh 胶水层实现
 ├── env.zsh               # 环境变量、PATH、Fzf 默认命令与主题、Yazi 配置路径
 ├── init.zsh              # 终端标题、Starship/Vfox/Zoxide、Fzf 预览（eza/bat）
 ├── aliases.zsh           # 别名（Docker/nvim/Dir/Tools；ls→eza, cat→bat, top→btop, rm→safe-rm）
-├── functions/
-│   ├── index.zsh         # 按序 source 下列子模块
-│   ├── file-ops.zsh      # mkcd、lt 树形列表、rmr 按模式删除
-│   ├── fzf.zsh           # ff/fs/ffo/fso 文件与内容搜索
-│   ├── git.zsh           # gdiff 等（依赖 git-delta）
-│   ├── yazi.zsh          # 与 yazi 文件管理器集成
-│   ├── process.zsh       # fp 杀进程
-│   ├── docker.zsh       # dd 统一 Docker 操作
-│   ├── docker-dispatch.zsh
-│   ├── dev.zsh
-│   └── proxy.zsh
 ├── history.zsh           # 历史记录
 ├── completions.zsh       # 补全配置
 ├── plugins.zsh           # 插件加载入口
@@ -76,7 +69,7 @@ echo 'source ~/.zsh/zshrc' > ~/.zshrc
 ├── plugins/              # 插件配置与仓库
 │   ├── autosuggestions.zsh
 │   ├── history-substring-search.zsh
-│   ├── vi-mode.zsh       # 内含 fzf --zsh 延迟加载
+│   ├── vi-mode.zsh       # 内含 fzf --zsh 延迟加载确保快捷键 Ctrl-r 正常注册
 │   ├── syntax-highlighting.zsh
 │   └── zsh-*/            # 各插件 git 仓库
 └── yazi/                 # Yazi 配置（YAZI_CONFIG_HOME 指向此处）
@@ -126,7 +119,7 @@ echo 'source ~/.zsh/zshrc' > ~/.zshrc
 ## 自定义
 
 - **添加别名**：编辑 `~/.zsh/aliases.zsh`
-- **添加函数**：编辑 `~/.zsh/functions/index.zsh`（新增 source）或 `~/.zsh/functions/*.zsh`（具体逻辑）
+- **添加函数**：参考 `AGENTS.md` 了解 Zsh 与 Bun 的协作规范。通常在 `functions/bun/src/` 编写逻辑，在 `functions/*.zsh` 编写 UI 绑定
 - **修改 Fzf 打开方式**：`~/.zsh/functions/fzf.zsh` 中的 `_fzf_bind_file`、`_fzf_ff_header` 等
 - **修改 PATH**：编辑 `~/.zsh/env.zsh`
 - **新增插件**：在 `plugins/` 下添加 `xxx.zsh`，并在 `plugins.zsh` 中 `source`
