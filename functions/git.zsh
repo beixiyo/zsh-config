@@ -9,7 +9,7 @@ _git_preview_window="right:75%:border-left:wrap"
 # 使用默认值以防环境变量未设置
 _fzf_cmd="${fzfCmdBind:-ctrl}"
 _fzf_opt="${fzfOptionBind:-alt}"
-_git_scroll_binds="${_fzf_cmd}-j:preview-down,${_fzf_cmd}-k:preview-up,${_fzf_opt}-j:preview-down+preview-down+preview-down+preview-down+preview-down,${_fzf_opt}-k:preview-up+preview-up+preview-up+preview-up+preview-up"
+_git_scroll_binds="${_fzf_cmd}-j:down,${_fzf_cmd}-k:up,${_fzf_opt}-j:preview-down+preview-down+preview-down+preview-down+preview-down,${_fzf_opt}-k:preview-up+preview-up+preview-up+preview-up+preview-up"
 _git_option_label="${(C)${optionKey:-alt}}"
 
 function gdiff() {
@@ -29,23 +29,14 @@ function gdiff() {
       bat --color=always --style=numbers "$file" 2>/dev/null || echo "No diff available for $file"
     fi'
 
-  local header="ENTER: 打开"$'\n'"CTRL-S: Stage | CTRL-U: Unstage"$'\n'"CTRL-J/K: 滚动 | ${_git_option_label}-J/K: 快速滚动"
+  local header="ENTER: 打开"$'\n'"CTRL-S: Stage | CTRL-U: Unstage"$'\n'"CTRL-J/K: 切换文件 | ${_git_option_label}-J/K: 滚动预览"
 
-  # 列: icon \t status \t path；按 path 排序使列表顺序稳定，暂存/取消暂存时仅该行图标变化、行位置不变，避免 reload 后 fzf 光标错位
-  # 优化：剥离 git status 输出中的引号，并修正 sort 的 tab 分隔符
-  local gen_list="git -c core.quotepath=false status --short | awk '
-    {
-      s = substr(\$0, 1, 3)
-      f = substr(\$0, 4)
-      gsub(/^[ \\t]+|[ \\t]+\$/, \"\", f)
-      if (f ~ /^\"/) { f = substr(f, 2, length(f)-2); gsub(/\\\\/, \"\", f) }
-      idx = substr(s, 1, 1)   # index
-      if (idx != \" \" && idx != \"?\") { icon = \"\357\220\225\" }
-      else { icon = \"\357\214\264\" }
-      printf \"%s\\t%s\\t%s\\n\", icon, s, f
-    }' | sort -t\$'\\t' -k3,3"
+  # 列: icon \t status \t path；数据源用 Bun，输出完即退出不占 TTY，reload 时重新跑 Bun
+  local _dir="${${(%):-%x}:A:h}"
+  local gen_list="bun run \"$_dir/bun/src/git.ts\" 2>/dev/null"
 
-  eval "$gen_list" | fzf --ansi \
+  # 左侧 stdin 重定向到 /dev/null，避免与 fzf 争用 TTY（否则按键会概率性被 Bun/Shell 读走并回显为 ^[[B）
+  eval "$gen_list" < /dev/null | fzf --ansi \
     --header "$header" \
     --header-first \
     --with-nth=1,3 \
@@ -65,7 +56,7 @@ function glog() {
   local log_format="%C(auto)%h%d %s %C(black)%C(bold)%cr"
   git log --graph --color=always --format="$log_format" "$@" | \
   fzf --ansi --no-sort --reverse --tiebreak=index \
-    --preview "git show --color=always \$(echo {q} | grep -o '[a-f0-9]\{7,40\}' | head -1) 2>/dev/null | delta --width=\${FZF_PREVIEW_COLUMNS:-80}" \
+    --preview "git show --color=always \$(echo {} | grep -o '[a-f0-9]\{7,40\}' | head -1) 2>/dev/null | delta --width=\${FZF_PREVIEW_COLUMNS:-80}" \
     --preview-window "$_git_preview_window" \
     --bind "$_git_scroll_binds" \
     --header "CTRL-J/K: 滚动预览（${_git_option_label}-J/K: 快速滚动）"
