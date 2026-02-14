@@ -41,13 +41,13 @@ eval "$gen_list" < /dev/null | fzf --ansi \
 
 execute 里仍是 Zsh/原生命令（`git add`、`nvim`），不交给 Bun
 
-### 1.1 管道左侧与 reload 必须关闭 stdin（避免概率性 ^[[B）
+### 2. 管道左侧与 reload 必须关闭 stdin（避免概率性 ^[[B）
 
 管道只重定向 **stdout**，左侧进程的 **stdin 仍接在 TTY**。若左侧或 reload 子进程也从 TTY 读，按键会被 fzf 与左侧/reload 争抢，表现为**概率性**：有时正常，有时方向键/快捷键被当成普通字符回显（如 `^[[B`）。与 Bun 冷启动、reload 时机等有关
 
 **处理**：左侧用 `eval "$gen_list" < /dev/null | fzf`；传入 `--bind "reload:..."` 的命令末尾加 ` < /dev/null`（若 gen_list 含双引号，先赋给 `gen_list_bind` 再拼进 bind，避免引号截断）
 
-### 2. 预览随选中行变化：用 `{}`，不要 `{q}`
+### 3. 预览随选中行变化：用 `{}`，不要 `{q}`
 
 **❌ 错误**：`{q}` 是搜索框内容，上下移动时不变 → 右侧预览不更新
 
@@ -61,7 +61,7 @@ execute 里仍是 Zsh/原生命令（`git add`、`nvim`），不交给 Bun
 --preview "git show \$(echo {} | grep -o '[a-f0-9]\{7,40\}' | head -1) | delta ..."
 ```
 
-### 3. Bun 脚本作为 fzf 数据源时的约定
+### 4. Bun 脚本作为 fzf 数据源时的约定
 
 - 用 **`process.stdout.write(line + '\n')`**，不用 `console.log`（避免缓冲/换行导致 fzf 错行）
 - 结尾 **`process.exit(0)`**，保证输出刷到管道
