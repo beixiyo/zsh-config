@@ -8,7 +8,10 @@
 #   - Bun 负责：查找、列表展示、交互确认、执行 rm
 #   - zsh 负责：保留函数名与调用习惯
 
-FILE_OPS_BUN_SCRIPT="${HOME}/.zsh/functions/bun/src/file-ops.ts"
+() {
+  local dir="${${(%):-%x}:A:h}"
+  FILE_OPS_BUN_SCRIPT="$dir/bun/src/file-ops.ts"
+}
 
 mkcd() { mkdir -p "$@" && cd "$@"; }
 

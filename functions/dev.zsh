@@ -12,7 +12,10 @@
 #     eval "$(bun run "$PROXY_BUN_SCRIPT" set "$@")"
 # - 本文件只调用外部命令，不改 shell 状态，所以直接 `bun run` 即可
 #
-DEV_BUN_SCRIPT="${HOME}/.zsh/functions/bun/src/dev.ts"
+() {
+  local dir="${${(%):-%x}:A:h}"
+  DEV_BUN_SCRIPT="$dir/bun/src/dev.ts"
+}
 
 d() {
   bun run "$DEV_BUN_SCRIPT" d "$@"

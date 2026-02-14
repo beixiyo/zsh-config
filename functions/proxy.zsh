@@ -12,7 +12,10 @@
 #     - 保留原有函数名：setProxy / unsetProxy
 #     - 调用 bun 脚本，并在当前 shell 中 eval 其输出
 
-PROXY_BUN_SCRIPT="${HOME}/.zsh/functions/bun/src/proxy.ts"
+() {
+  local dir="${${(%):-%x}:A:h}"
+  PROXY_BUN_SCRIPT="$dir/bun/src/proxy.ts"
+}
 
 setProxy() {
   eval "$(bun run "$PROXY_BUN_SCRIPT" set "$@")"

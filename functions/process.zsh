@@ -9,7 +9,10 @@
 #   - 对接 fzf 交互（fp）
 #   - 调用 bun 脚本执行实际的 kill 逻辑（TERM + KILL + 检查）
 
-PROCESS_BUN_SCRIPT="${HOME}/.zsh/functions/bun/src/process.ts"
+() {
+  local dir="${${(%):-%x}:A:h}"
+  PROCESS_BUN_SCRIPT="$dir/bun/src/process.ts"
+}
 
 ## 按进程名杀（匹配命令行）
 killByName() {
