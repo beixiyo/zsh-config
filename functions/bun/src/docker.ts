@@ -10,11 +10,11 @@
  *   dispatch <action> [line...]      - 解析选中行并执行 docker 操作（logs/exec/copy/stop/run/restart/delete/image）
  */
 
-import { COLORS } from './shared'
+import { COLORS, ICONS } from './shared'
 
 // 容器 / 镜像图标（Nerd Font），带颜色；格式为 类型\t图标\tID\t...，dispatch 用 cut -f3 取 ID
-const ICON_CONTAINER = `${COLORS.Cyan}${COLORS.Reset}`
-const ICON_IMAGE = `${COLORS.Blue}${COLORS.Reset}`
+const ICON_CONTAINER = `${COLORS.Cyan}${ICONS.container}${COLORS.Reset}`
+const ICON_IMAGE = `${COLORS.Blue}${ICONS.docker}${COLORS.Reset}`
 
 // 不用 table：table 会对齐列用空格填充，导致 split('\t') 后 parts[2] 整行当 ID
 const DOCKER_PS_FORMAT = '{{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Names}}'

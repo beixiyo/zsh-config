@@ -7,10 +7,10 @@
  */
 
 import { $ } from 'bun'
-import { COLORS } from './shared';
+import { COLORS, ICONS } from './shared';
 
-const ICON_STAGED = `${COLORS.Green}${COLORS.Reset}`
-const ICON_OTHER = `${COLORS.Red}${COLORS.Reset}`
+const ICON_STAGED = `${COLORS.Green}${ICONS.git_commit}${COLORS.Reset}`
+const ICON_OTHER = `${COLORS.Red}${ICONS.git_merge}${ICONS.git_merge}${COLORS.Reset}`
 
 function parsePath(raw: string): string {
   let f = raw.replace(/^[\s\t]+|[\s\t]+$/g, '')
