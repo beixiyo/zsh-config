@@ -1,73 +1,101 @@
 # 开发指南：Zsh & Bun 协作规范
 
-本目录采用 **"Zsh 为壳，Bun 为核"** 的混合架构。Zsh 负责 TTY 交互与 UI 渲染，Bun 负责业务逻辑与数据处理
+本目录采用 **"Zsh 为壳，Bun 为核"**：Zsh 负责 TTY 交互与 UI（fzf），Bun 负责逻辑与数据处理
 
-## 核心分工原则
+## 核心分工
 
-| 维度 | **Zsh (Glue Layer)** | **Bun (Logic Layer)** |
+| 维度 | **Zsh** | **Bun** |
 | :--- | :--- | :--- |
-| **擅长场景** | UI 渲染 (fzf)、TTY 交互、环境变更 (cd/export) | 复杂逻辑、API 调用、JSON 解析、类型安全 |
-| **性能开销** | 极低 (0ms 启动) | 中等 (20-50ms 启动开销) |
-| **交互能力** | **完美** 处理 `stdin/stdout` | **不适合** 在 `fzf` 绑定中处理交互 |
-| **文件位置** | `functions/*.zsh` | `functions/bun/src/*.ts` |
+| 场景 | fzf、cd/export、execute 内交互命令 | 列表生成、JSON、复杂逻辑 |
+| 位置 | `functions/*.zsh` | `functions/bun/src/*.ts` |
 
-### 严禁使用 Bun 的场景
-- **FZF Action 内部**：严禁在 `fzf --bind "ctrl-x:execute(bun ...)"` 中使用 Bun，这会导致 **TTY 争夺** 和 **快捷键失效**（Escape 序列丢失）
-- **简单文件操作**：`rm -rf` 或 `mkdir` 这种原生命令更快的场景
-- **高频循环**：启动开销会积少成多导致明显的卡顿
+慎用 Bun：简单文件操作（用原生）、execute() 内再起交互式子进程（易 TTY 争用）、高频循环（启动开销）
 
-### 何时使用 `functions/bun/src/shared.ts`
-`shared.ts` 存放**多个 Bun 脚本共用的工具**，避免重复实现。当前提供 `runWithTty` 等
+---
 
-**应当从 shared 引入的场景：**
+## Bun + fzf 正确用法（避免 TTY/预览坑）
 
-- 需要**带 TTY 执行子进程**（`stdio: 'inherit'`）：例如执行 `pnpm build` / `npm run dev` / `flutter test` 等，子进程依赖 `process.stdout.isTTY`（如 Nx UI、交互式 dev server、watch 模式测试）时，使用 `runWithTty(cwd, cmd)`，不要用 `` $`cmd` ``，否则子进程会拿到管道而非 TTY，导致 UI 或交互异常
-- 将来有**新的跨脚本通用能力**（如共用的解析、格式化、环境检测等），也应放入 `shared.ts` 并在此说明
+用代码说明：**什么会踩坑、怎么写才对**
 
-**不必用 shared 的场景：**
+### 1. 数据源：用 reload(bun)，不要 bun | fzf
 
-- 脚本需要**捕获子进程 stdout**（如 `pgrep`/`fd` 输出再解析）：必须用 Bun 的 `` $`...` `` 或 `Bun.spawn` 且 stdout 为 pipe，不能改用 `runWithTty`
-- 脚本**不执行子进程**（如 proxy 只做参数解析并写 shell 片段）：无需引用 shared
+**❌ 错误**：Bun 在管道左侧，与 fzf 争用 TTY → 快捷键失效、终端打出 ^[[B
 
-## 自定义函数实现模板
+```bash
+# 错误：bun 长期在管道里，占 TTY
+bun run git-log.ts "$@" | fzf --bind "ctrl-j:preview-down" ...
+```
 
-### 模式 A：纯逻辑计算（Bun 输出，Zsh 执行）
-适用于需要修改当前 Shell 环境（如 `cd`, `export`）或获取复杂数据的场景
+**✅ 正确**：Bun 只做「输出列表后退出」，放在 **reload** 或 **初始 eval**，不占 TTY
 
-**Bun (logic.ts):**
+```bash
+# 正确：初始列表 + 刷新都用 bun，Bun 输出完即退出
+_dir="${${(%):-%x}:A:h}"
+gen_list="bun run \"$_dir/bun/src/git-status-list.ts\" 2>/dev/null"
+eval "$gen_list" | fzf --ansi \
+  --bind "ctrl-s:execute(git add -- {3})+reload:${gen_list}" \
+  --bind "enter:execute(${EDITOR:-nvim} {3} < /dev/tty)+abort"
+```
+
+execute 里仍是 Zsh/原生命令（`git add`、`nvim`），不交给 Bun
+
+### 2. 预览随选中行变化：用 `{}`，不要 `{q}`
+
+**❌ 错误**：`{q}` 是搜索框内容，上下移动时不变 → 右侧预览不更新
+
+```bash
+--preview "git show \$(echo {q} | grep -o '[a-f0-9]\{7,40\}' | head -1) | delta ..."
+```
+
+**✅ 正确**：`{}` 是当前选中行，移动光标会变
+
+```bash
+--preview "git show \$(echo {} | grep -o '[a-f0-9]\{7,40\}' | head -1) | delta ..."
+```
+
+### 3. Bun 脚本作为 fzf 数据源时的约定
+
+- 用 **`process.stdout.write(line + '\n')`**，不用 `console.log`（避免缓冲/换行导致 fzf 错行）
+- 结尾 **`process.exit(0)`**，保证输出刷到管道
+- 若脚本内 spawn 子进程且要继承 TTY，用 `shared.ts` 的 `runWithTty`；仅需捕获 stdout 时用 `` $`cmd` `` 或 `Bun.spawn` 且 stdout 为 pipe
+
+---
+
+## shared.ts 使用时机
+
+- **需要**：脚本内执行**依赖 TTY 的子进程**（如 `npm run dev`、`flutter test`）→ 用 `runWithTty(cwd, cmd)`，否则子进程拿不到 TTY
+- **不需要**：只捕获子进程 stdout 做解析、或不执行子进程 → 不必引用 shared
+
+---
+
+## 实现模板
+
+**模式 A：Bun 输出 Shell 片段，Zsh eval 执行**（改环境、取数据）
+
 ```typescript
-// 只负责计算并输出 Shell 语句
+// logic.ts
 console.log(`export PROXY_URL="http://127.0.0.1:7890"`);
 ```
 
-**Zsh (logic.zsh):**
 ```bash
-my_cmd() {
-  # 使用 eval 捕获 Bun 的输出并应用到当前 shell
-  eval "$(bun run ~/.zsh/functions/bun/src/logic.ts "$@")"
-}
+my_cmd() { eval "$(bun run ~/.zsh/functions/bun/src/logic.ts "$@")"; }
 ```
 
-### 模式 B：混合 UI 模式 (The Hybrid Pattern)
-适用于 `fzf` 驱动的工具。**数据源由 Bun 提供，交互动作由 Zsh 原生执行。**
+**模式 B：fzf + Bun 数据源**（列表/刷新用 Bun，execute 用 Zsh）
 
-**Zsh (ui.zsh):**
 ```bash
-dd() {
-  # 1. Bun 仅作为数据源（Source）提供流
-  bun run ~/.zsh/functions/bun/src/data_provider.ts list | fzf \
-    --ansi \
-    --header "Action Guide" \
-    # 2. 绑定动作必须直接调用原生命令，确保 TTY 响应是瞬时的
-    --bind "ctrl-e:execute(id=\$(echo {} | awk '{print \$1}'); docker exec -it \$id bash)+abort"
-}
+# 数据源 / reload 用 bun；按键动作用原生
+gen_list="bun run \"$_dir/bun/src/list.ts\" 2>/dev/null"
+eval "$gen_list" | fzf --bind "ctrl-r:reload:${gen_list}" \
+  --bind "enter:execute(nvim {})"
 ```
 
-## 避坑指南
+---
 
-1. **TTY 稳定性**：如果你发现 `Alt` 快捷键失效，通常是因为 `fzf` 的子进程（Bun）启动太慢，劫持了终端序列。请将 `execute` 里的指令改为原生 Zsh 指令
-2. **输出缓冲与数据完整性**：
-   - 当 Bun 作为 `fzf` 的数据源时，**务必使用 `process.stdout.write` 替代 `console.log`**
-   - `console.log` 会进行额外的格式化检查并自动添加换行符，且具有异步缓冲特性，容易导致 `fzf` 渲染出现行重复或跳行
-   - `process.stdout.write` 提供无损、原始的流输出，对 ANSI 颜色序列更友好
-3. **显式退出**：在脚本末尾使用 `process.exit(0)`，确保所有异步输出流已被排空（Flush）到管道中
+## 避坑速查
+
+| 现象 | 原因 | 处理 |
+|------|------|------|
+| Alt/Ctrl 失效、终端出现 ^[[B | Bun 在 `bun \| fzf` 管道左侧占 TTY | 改用 `reload(bun ...)` 或 `eval "$(bun ...)" \| fzf`，execute 用 Zsh |
+| 预览不随上下键更新 | 预览用了 `{q}`（搜索框） | 改为 `{}`（当前行） |
+| fzf 列表错行/重复 | 用 `console.log` 或未 flush | 用 `process.stdout.write` + `process.exit(0)` |
