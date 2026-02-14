@@ -1,4 +1,5 @@
 plugins/zsh-*
 secret.zsh
 
+.hidden
 node_modules
