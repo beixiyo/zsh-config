@@ -11,10 +11,23 @@
 | **交互能力** | **完美** 处理 `stdin/stdout` | **不适合** 在 `fzf` 绑定中处理交互 |
 | **文件位置** | `functions/*.zsh` | `functions/bun/src/*.ts` |
 
-❌ **严禁使用 Bun 的场景：**
+### 严禁使用 Bun 的场景
 - **FZF Action 内部**：严禁在 `fzf --bind "ctrl-x:execute(bun ...)"` 中使用 Bun，这会导致 **TTY 争夺** 和 **快捷键失效**（Escape 序列丢失）
 - **简单文件操作**：`rm -rf` 或 `mkdir` 这种原生命令更快的场景
 - **高频循环**：启动开销会积少成多导致明显的卡顿
+
+### 何时使用 `functions/bun/src/shared.ts`
+`shared.ts` 存放**多个 Bun 脚本共用的工具**，避免重复实现。当前提供 `runWithTty` 等
+
+**应当从 shared 引入的场景：**
+
+- 需要**带 TTY 执行子进程**（`stdio: 'inherit'`）：例如执行 `pnpm build` / `npm run dev` / `flutter test` 等，子进程依赖 `process.stdout.isTTY`（如 Nx UI、交互式 dev server、watch 模式测试）时，使用 `runWithTty(cwd, cmd)`，不要用 `` $`cmd` ``，否则子进程会拿到管道而非 TTY，导致 UI 或交互异常
+- 将来有**新的跨脚本通用能力**（如共用的解析、格式化、环境检测等），也应放入 `shared.ts` 并在此说明
+
+**不必用 shared 的场景：**
+
+- 脚本需要**捕获子进程 stdout**（如 `pgrep`/`fd` 输出再解析）：必须用 Bun 的 `` $`...` `` 或 `Bun.spawn` 且 stdout 为 pipe，不能改用 `runWithTty`
+- 脚本**不执行子进程**（如 proxy 只做参数解析并写 shell 片段）：无需引用 shared
 
 ## 自定义函数实现模板
 

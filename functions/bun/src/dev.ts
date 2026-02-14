@@ -13,7 +13,7 @@
  * 行为与原 `dev.zsh` 尽量保持一致。
  */
 
-import { $ } from 'bun'
+import { runWithTty } from './shared'
 
 type DevCommand = 'd' | 'b' | 'i' | 't'
 
@@ -57,37 +57,47 @@ async function runDev(cwd: string) {
   if (await Bun.file(`${cwd}/package.json`).exists()) {
     const pm = await detectPm(cwd)
     console.log('🚀 启动 Node.js 开发服务器...')
+    let code: number
     switch (pm) {
       case 'pnpm':
         console.log('+ pnpm dev')
-        await $`pnpm dev`
-        return
+        code = await runWithTty(cwd, ['pnpm', 'dev'])
+        break
       case 'bun':
         console.log('+ bun run dev')
-        await $`bun run dev`
-        return
+        code = await runWithTty(cwd, ['bun', 'run', 'dev'])
+        break
       case 'yarn':
         console.log('+ yarn dev')
-        await $`yarn dev`
-        return
+        code = await runWithTty(cwd, ['yarn', 'dev'])
+        break
       default:
         console.log('+ npm run dev')
-        await $`npm run dev`
-        return
+        code = await runWithTty(cwd, ['npm', 'run', 'dev'])
+        break
     }
+    if (code !== 0)
+      process.exit(code)
+    return
   }
 
   if (await Bun.file(`${cwd}/pom.xml`).exists()) {
     console.log('🚀 启动 Java 开发服务器...')
     console.log('+ nodemon -w ./controller/**/* -e java -x "mvn spring-boot:run"')
-    await $`nodemon -w ./controller/**/* -e java -x "mvn spring-boot:run"`
+    const code = await runWithTty(cwd, [
+      'nodemon', '-w', './controller/**/*', '-e', 'java', '-x', 'mvn spring-boot:run',
+    ])
+    if (code !== 0)
+      process.exit(code)
     return
   }
 
   if (await Bun.file(`${cwd}/pubspec.yaml`).exists()) {
     console.log('🚀 启动 Flutter...')
     console.log('+ flutter run')
-    await $`flutter run`
+    const code = await runWithTty(cwd, ['flutter', 'run'])
+    if (code !== 0)
+      process.exit(code)
     return
   }
 
@@ -99,38 +109,48 @@ async function runBuild(cwd: string) {
   if (await Bun.file(`${cwd}/package.json`).exists()) {
     const pm = await detectPm(cwd)
     console.log('📦 构建 Node.js 项目...')
+    let exitCode: number
     switch (pm) {
       case 'pnpm':
         console.log('+ pnpm build')
-        await $`pnpm build`
-        return
+        exitCode = await runWithTty(cwd, ['pnpm', 'build'])
+        break
       case 'bun':
         console.log('+ bun run build')
-        await $`bun run build`
-        return
+        exitCode = await runWithTty(cwd, ['bun', 'run', 'build'])
+        break
       case 'yarn':
         console.log('+ yarn build')
-        await $`yarn build`
-        return
+        exitCode = await runWithTty(cwd, ['yarn', 'build'])
+        break
       default:
         console.log('+ npm run build')
-        await $`npm run build`
-        return
+        exitCode = await runWithTty(cwd, ['npm', 'run', 'build'])
+        break
     }
+    if (exitCode !== 0)
+      process.exit(exitCode)
+    return
   }
 
   if (await Bun.file(`${cwd}/pom.xml`).exists()) {
     console.log('📦 构建 Java 项目...')
     console.log('+ mvn clean package')
-    await $`mvn clean package`
+    const code = await runWithTty(cwd, ['mvn', 'clean', 'package'])
+    if (code !== 0)
+      process.exit(code)
     return
   }
 
   if (await Bun.file(`${cwd}/pubspec.yaml`).exists()) {
     console.log('📦 构建 Flutter 项目...')
     console.log('+ flutter clean && flutter build')
-    await $`flutter clean`
-    await $`flutter build`
+    let code = await runWithTty(cwd, ['flutter', 'clean'])
+    if (code !== 0)
+      process.exit(code)
+    code = await runWithTty(cwd, ['flutter', 'build'])
+    if (code !== 0)
+      process.exit(code)
     return
   }
 
@@ -142,25 +162,26 @@ async function runInstall(cwd: string, args: string[]) {
   if (await Bun.file(`${cwd}/package.json`).exists()) {
     const pm = await detectPm(cwd)
     const hasPkgs = args.length > 0
+    let code: number
     if (hasPkgs) {
       console.log(`🔍 安装依赖: ${args.join(' ')}`)
       switch (pm) {
         case 'pnpm':
           console.log('+ pnpm add', args.join(' '))
-          await $`pnpm add ${args}`
-          return
+          code = await runWithTty(cwd, ['pnpm', 'add', ...args])
+          break
         case 'bun':
           console.log('+ bun add', args.join(' '))
-          await $`bun add ${args}`
-          return
+          code = await runWithTty(cwd, ['bun', 'add', ...args])
+          break
         case 'yarn':
           console.log('+ yarn add', args.join(' '))
-          await $`yarn add ${args}`
-          return
+          code = await runWithTty(cwd, ['yarn', 'add', ...args])
+          break
         default:
           console.log('+ npm install', args.join(' '))
-          await $`npm install ${args}`
-          return
+          code = await runWithTty(cwd, ['npm', 'install', ...args])
+          break
       }
     }
     else {
@@ -168,42 +189,50 @@ async function runInstall(cwd: string, args: string[]) {
       switch (pm) {
         case 'pnpm':
           console.log('+ pnpm install')
-          await $`pnpm install`
-          return
+          code = await runWithTty(cwd, ['pnpm', 'install'])
+          break
         case 'bun':
           console.log('+ bun install')
-          await $`bun install`
-          return
+          code = await runWithTty(cwd, ['bun', 'install'])
+          break
         case 'yarn':
           console.log('+ yarn install')
-          await $`yarn install`
-          return
+          code = await runWithTty(cwd, ['yarn', 'install'])
+          break
         default:
           console.log('+ npm install')
-          await $`npm install`
-          return
+          code = await runWithTty(cwd, ['npm', 'install'])
+          break
       }
     }
+    if (code !== 0)
+      process.exit(code)
+    return
   }
 
   if (await Bun.file(`${cwd}/pom.xml`).exists()) {
     console.log('🔍 安装 Maven 依赖...')
     console.log('+ mvn clean install')
-    await $`mvn clean install`
+    const code = await runWithTty(cwd, ['mvn', 'clean', 'install'])
+    if (code !== 0)
+      process.exit(code)
     return
   }
 
   if (await Bun.file(`${cwd}/pubspec.yaml`).exists()) {
+    let code: number
     if (args.length > 0) {
       console.log(`🔍 添加依赖: ${args.join(' ')}`)
       console.log('+ flutter pub add', args.join(' '))
-      await $`flutter pub add ${args}`
+      code = await runWithTty(cwd, ['flutter', 'pub', 'add', ...args])
     }
     else {
       console.log('🔍 获取 Flutter 依赖...')
       console.log('+ flutter pub get')
-      await $`flutter pub get`
+      code = await runWithTty(cwd, ['flutter', 'pub', 'get'])
     }
+    if (code !== 0)
+      process.exit(code)
     return
   }
 
@@ -215,37 +244,45 @@ async function runTest(cwd: string) {
   if (await Bun.file(`${cwd}/package.json`).exists()) {
     const pm = await detectPm(cwd)
     console.log('🧪 运行测试...')
+    let code: number
     switch (pm) {
       case 'pnpm':
         console.log('+ pnpm test')
-        await $`pnpm test`
-        return
+        code = await runWithTty(cwd, ['pnpm', 'test'])
+        break
       case 'bun':
         console.log('+ bun test')
-        await $`bun test`
-        return
+        code = await runWithTty(cwd, ['bun', 'test'])
+        break
       case 'yarn':
         console.log('+ yarn test')
-        await $`yarn test`
-        return
+        code = await runWithTty(cwd, ['yarn', 'test'])
+        break
       default:
         console.log('+ npm run test')
-        await $`npm run test`
-        return
+        code = await runWithTty(cwd, ['npm', 'run', 'test'])
+        break
     }
+    if (code !== 0)
+      process.exit(code)
+    return
   }
 
   if (await Bun.file(`${cwd}/pom.xml`).exists()) {
     console.log('🧪 运行 Maven 测试...')
     console.log('+ mvn test')
-    await $`mvn test`
+    const code = await runWithTty(cwd, ['mvn', 'test'])
+    if (code !== 0)
+      process.exit(code)
     return
   }
 
   if (await Bun.file(`${cwd}/pubspec.yaml`).exists()) {
     console.log('🧪 运行 Flutter 测试...')
     console.log('+ flutter test')
-    await $`flutter test`
+    const code = await runWithTty(cwd, ['flutter', 'test'])
+    if (code !== 0)
+      process.exit(code)
     return
   }
 
