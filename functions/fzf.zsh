@@ -14,8 +14,8 @@ else
 fi
 _fzf_bun_dir="${${(%):-%x}:A:h}/bun/src"
 
-## 文件预览：如果是目录用 eza，否则用 bat
-_ff_preview="if [ -d {} ]; then eza --tree --level=3 --color=always --icons --group-directories-first -a {}; else bat --color=always --style=numbers --line-range=:500 {}; fi"
+## 文件预览：如果是目录用 lsd，否则用 bat
+_ff_preview="if [ -d {} ]; then lsd --tree --depth 3 --color always --icon always --group-directories-first -a {}; else bat --color=always --style=numbers --line-range=:500 {}; fi"
 ## 行预览（用于 rg 结果 file:line）
 _fs_preview="bat --color=always --style=numbers --theme=base16 --highlight-line {2} {1}"
 _fs_opts=(
@@ -100,7 +100,7 @@ ff() {
   local reload_f="bun run \"$_dir/bun/src/ff-list.ts\" --dir \"$dir\" --type f 2>/dev/null < /dev/null"
   local reload_d="bun run \"$_dir/bun/src/ff-list.ts\" --dir \"$dir\" --type d 2>/dev/null < /dev/null"
   local reload_a="bun run \"$_dir/bun/src/ff-list.ts\" --dir \"$dir\" --type a 2>/dev/null < /dev/null"
-  local ff_preview_path="if [ -d {2} ]; then eza --tree --level=3 --color=always --icons --group-directories-first -a {2}; else bat --color=always --style=numbers --line-range=:500 {2}; fi"
+  local ff_preview_path="if [ -d {2} ]; then lsd --tree --depth 3 --color always --icon always --group-directories-first -a {2}; else bat --color=always --style=numbers --line-range=:500 {2}; fi"
   local _abs_ff="bun run \"$_fzf_bun_dir/path.ts\" abs {+2} 2>/dev/null | $_fzf_copy_cmd"
   local bind_file_ff=(
     --bind "${fzfCmdBind}-o:execute(code {2})"

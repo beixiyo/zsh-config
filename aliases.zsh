@@ -21,9 +21,9 @@ alias mkdir="mkdir -p"
 
 alias rm='safe-rm'
 # ls 精简（多列、图标、目录优先）
-alias ls='eza -a --icons --group-directories-first -h'
-# ll 详细（列表+时间+git+目录大小，显示全部）
-alias ll='eza -l -a --icons --group-directories-first -h --time-style=long-iso --git --total-size'
+alias ls='lsd -a --icon always --group-directories-first -h'
+# ll 详细（列表+git+目录大小，显示全部）
+alias ll='lsd -l -a --icon always --group-directories-first -h --total-size --git'
 # lt 见 functions.zsh：树形列表，可传递归层级
 
 # Tools

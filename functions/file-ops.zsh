@@ -19,8 +19,8 @@ mkcd() { mkdir -p "$@" && cd "$@"; }
 lt() {
   local level=2
   [[ "$1" == <-> ]] && { level=$1; shift }
-  eza -l -a --icons --group-directories-first -h --time-style=long-iso --git --git-ignore \
-    --ignore-glob "node_modules|.git|.next|dist|.turbo" --tree --level=$level "$@"
+  lsd -l -a --icon always --group-directories-first -h --git \
+    --ignore-glob "node_modules|.git|.next|dist|.turbo" --tree --depth "$level" --total-size "$@"
 }
 
 ## 在根目录下按文件名模式递归查找并确认后删除。用法：rmr <根目录> <模式1> [模式2] ...
