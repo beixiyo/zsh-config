@@ -1,5 +1,6 @@
 # Docker
-alias dps='sudo docker ps -a --format "table {{.ID}}\t{{.Image}}\t{{.Ports}}\t{{.Status}}\t{{.Names}}"'
+# 常用列，NAMES 在前便于查找，PORTS 放最后避免撑破对齐
+alias dps='sudo docker ps -a --format "table {{.Names}}\t{{.Status}}\t{{.Image}}\t{{.Ports}}"'
 alias dis='sudo docker images'
 # 见 functions.zsh：dd 统一 Docker 操作面板
 
