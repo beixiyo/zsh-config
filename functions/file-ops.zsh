@@ -33,3 +33,15 @@ rme() {
   bun run "$FILE_OPS_BUN_SCRIPT" rme "$@"
 }
 
+## 用系统默认文件管理器打开目录。用法：oo [路径]（默认当前目录）
+## WSL → explorer.exe；macOS → open (Finder)；Linux 桌面 → xdg-open
+open() {
+  local target="${1:-.}"
+  if [[ -n "$WSL_DISTRO_NAME" ]] || [[ -n "$WSLENV" ]] || { [[ -r /proc/version ]] && grep -qi microsoft /proc/version; }; then
+    explorer.exe "$target"
+  elif [[ "$OSTYPE" == darwin* ]]; then
+    open "$target"
+  else
+    xdg-open "$target"
+  fi
+}
