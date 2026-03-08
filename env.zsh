@@ -24,6 +24,11 @@ PATH="$HOME/.local/bin:$PATH"
 PATH="/mnt/c/Develop/cursor/resources/app/codeBin:$PATH"
 export PATH
 
+# starship、nvim 配置路径全局共享
+export STARSHIP_CONFIG="/usr/local/share/shell-config/.config/starship.toml"
+export XDG_CONFIG_HOME="/usr/local/share/shell-config/.config"
+export XDG_DATA_HOME="/usr/local/share/shell-config/.local/share"
+
 # 让 fzf 使用 fd 来搜索文件（快、智能、跳过忽略文件）
 # --hidden: 搜索隐藏文件
 # --follow: 跟随符号链接
