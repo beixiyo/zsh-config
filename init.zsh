@@ -7,10 +7,10 @@ wezterm_set_title() {
 autoload -Uz add-zsh-hook
 add-zsh-hook precmd wezterm_set_title
 
-# Prompt 美化 / 运行时管理 / 智能 cd
-eval "$(starship init zsh)"
-eval "$(vfox activate zsh)"
-eval "$(zoxide init --cmd cd zsh)"
+# Prompt 美化 / 运行时管理 / 智能 cd（未安装则跳过，不报错）
+command -v starship >/dev/null 2>&1 && eval "$(starship init zsh)"
+command -v vfox >/dev/null 2>&1 && eval "$(vfox activate zsh)"
+command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init --cmd cd zsh)"
 
 # Fzf 集成：Ctrl+R 历史、Ctrl+T 文件、Alt+C 目录预览、ssh ** Tab 等
 # 已移至 plugins/vi-mode.zsh 的 zvm_after_init 中，因 vi-mode 延迟 init 会覆盖 fzf 的绑定

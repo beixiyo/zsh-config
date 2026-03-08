@@ -6,7 +6,7 @@
 
 ```bash
 # Homebrew
-brew install bat fzf fd ripgrep tree eza zoxide btop git-delta safe-rm bun
+brew install bat fzf fd ripgrep tree lsd zoxide btop git-delta safe-rm bun
 
 # =============================================
 

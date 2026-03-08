@@ -1,6 +1,7 @@
 setopt prompt_subst          # 允许 PROMPT 中执行命令替换
 
-autoload -Uz compinit
+# 加载并初始化 Zsh 补全系统：-Uz 按 zsh 语法加载 compinit，-i 忽略不安全目录检查（避免因权限跳过补全）
+autoload -Uz compinit && compinit -i
 zmodload zsh/complist
 compinit
 
