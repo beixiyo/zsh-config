@@ -13,6 +13,11 @@ else
   export cmdKey="ctrl"
   export fzfOptionBind="alt"
   export fzfCmdBind="ctrl"
+
+  # starship、nvim 配置路径全局共享
+  export STARSHIP_CONFIG="/usr/local/share/shell-config/.config/starship.toml"
+  export XDG_CONFIG_HOME="/usr/local/share/shell-config/.config"
+  export XDG_DATA_HOME="/usr/local/share/shell-config/.local/share"
 fi
 
 # WSL 默认浏览器
@@ -23,11 +28,6 @@ PATH="$HOME/.local/bin:$PATH"
 # 解决 root 下找不到 code（路径不对时用 which code 查看后替换）
 PATH="/mnt/c/Develop/cursor/resources/app/codeBin:$PATH"
 export PATH
-
-# starship、nvim 配置路径全局共享
-export STARSHIP_CONFIG="/usr/local/share/shell-config/.config/starship.toml"
-export XDG_CONFIG_HOME="/usr/local/share/shell-config/.config"
-export XDG_DATA_HOME="/usr/local/share/shell-config/.local/share"
 
 # 让 fzf 使用 fd 来搜索文件（快、智能、跳过忽略文件）
 # --hidden: 搜索隐藏文件
