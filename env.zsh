@@ -54,3 +54,5 @@ export EDITOR="code"
 
 ## Yazi
 export YAZI_CONFIG_HOME="$HOME/.zsh/yazi"
+
+export MANPAGER="nvim +Man!"
