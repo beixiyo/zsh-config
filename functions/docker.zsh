@@ -66,6 +66,23 @@ dlogs() {
   sudo docker logs -f "$id"
 }
 
+# 指定容器 → 实时看 logs。默认仅当前运行周期（--since）；加 --no-since 则显示全部
+# 用法: dlog <container-name> [--no-since]，例: dlog flowtica-monitor | dlog flowtica-monitor --no-since
+dlog() {
+  local no_since name
+  for arg in "$@"; do
+    [[ "$arg" == --no-since ]] && no_since=1
+    [[ "$arg" != --no-since ]] && name="$arg"
+  done
+  name="${name:?Usage: dlog <container-name> [--no-since]}"
+  sudo -v || return 1
+  if (( no_since )); then
+    sudo docker logs -f "$name"
+  else
+    sudo docker logs -f "$name" --since "$(sudo docker inspect "$name" --format='{{.State.StartedAt}}')"
+  fi
+}
+
 # 选一个容器 → 复制 ID 到剪贴板（WSL: clip.exe）
 dcp() {
   sudo -v || return 1
