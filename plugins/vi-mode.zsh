@@ -14,9 +14,13 @@ ZVM_MODE_INDICATOR_VISUAL='[V]'
 ZVM_MODE_INDICATOR_REPLACE='[R]'
 ZVM_SHOW_MODE_IN_PROMPT=true
 
-if [[ ! -d "$ZSH_PLUGIN_DIR/zsh-vi-mode" ]]; then
+# 不完整 clone（无主文件）时删掉重试一次，避免 "no such file or directory"
+if [[ ! -f "$ZSH_PLUGIN_DIR/zsh-vi-mode/zsh-vi-mode.plugin.zsh" ]]; then
+  rm -rf "$ZSH_PLUGIN_DIR/zsh-vi-mode"
   git clone --depth=1 --single-branch --no-tags \
     https://github.com/jeffreytse/zsh-vi-mode \
     "$ZSH_PLUGIN_DIR/zsh-vi-mode"
 fi
-source "$ZSH_PLUGIN_DIR/zsh-vi-mode/zsh-vi-mode.plugin.zsh"
+if [[ -f "$ZSH_PLUGIN_DIR/zsh-vi-mode/zsh-vi-mode.plugin.zsh" ]]; then
+  source "$ZSH_PLUGIN_DIR/zsh-vi-mode/zsh-vi-mode.plugin.zsh"
+fi
