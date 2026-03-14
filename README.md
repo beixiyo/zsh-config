@@ -11,19 +11,10 @@ brew install bat fzf fd ripgrep tree lsd zoxide btop git-delta safe-rm bun
 # =============================================
 
 # Debian/Ubuntu
-sudo apt install -y bat fzf fd-find ripgrep tree btop safe-rm
+sudo apt install -y bat fzf fd-find ripgrep tree lsd btop safe-rm
 
 ## bun
 curl -fsSL https://bun.sh/install | bash
-
-## eza（https://eza.rocks/）
-sudo apt install -y gpg && \
-sudo mkdir -p /etc/apt/keyrings && \
-wget -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg && \
-echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" | sudo tee /etc/apt/sources.list.d/gierens.list && \
-sudo chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list && \
-sudo apt update && \
-sudo apt install -y eza
 
 ## zoxide 增强 cd https://crates.io/crates/zoxide
 curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
@@ -45,7 +36,7 @@ git clone --depth=1 --single-branch --no-tags https://github.com/beixiyo/zsh-con
 echo 'source ~/.zsh/zshrc' > ~/.zshrc
 ```
 
-完成后执行 `exec zsh` 或重新打开终端
+完成后执行 `exec zsh` 或重新打开终端。之后可用内置命令 **`ins`** 按发行版一键装包（见下方「内置好用工具」）
 
 ---
 
@@ -59,8 +50,8 @@ echo 'source ~/.zsh/zshrc' > ~/.zshrc
 │   ├── index.zsh          # 函数加载总入口
 │   └── ...                # 各模块的 Zsh 胶水层实现
 ├── env.zsh               # 环境变量、PATH、Fzf 默认命令与主题、Yazi 配置路径
-├── init.zsh              # 终端标题、Starship/Vfox/Zoxide、Fzf 预览（eza/bat）
-├── aliases.zsh           # 别名（Docker/nvim/Dir/Tools；ls→eza, cat→bat, top→btop, rm→safe-rm）
+├── init.zsh              # 终端标题、Starship/Zoxide/Mise、Fzf 预览（lsd/bat）
+├── aliases.zsh           # 别名（Docker/nvim/Dir/Tools；ls→lsd, cat→bat, top→btop, rm→safe-rm）
 ├── history.zsh           # 历史记录
 ├── completions.zsh       # 补全配置
 ├── plugins.zsh           # 插件加载入口
@@ -85,13 +76,47 @@ echo 'source ~/.zsh/zshrc' > ~/.zshrc
 | 文件 / 目录 | 功能 |
 |-------------|------|
 | `env.zsh` | PATH、BROWSER、平台键位、Fzf 默认命令与主题色、HOMEBREW 镜像、YAZI_CONFIG_HOME |
-| `init.zsh` | WezTerm 标题、Starship/Vfox/Zoxide 初始化；cd/rm/code/nvim 的 Fzf 预览（eza/bat） |
-| `aliases.zsh` | Docker/nvim/Dir/Tools 等别名；`ls`→eza、`cat`→bat、`top`→btop、`rm`→safe-rm |
-| `functions/` | `index.zsh` 按序加载 file-ops、fzf、git、yazi、process、docker、dev、proxy；含 mkcd、lt、rmr、ff/fs/ffo/fso、fp、dd、gdiff 等 |
+| `init.zsh` | WezTerm 标题、Starship/Zoxide/Mise 初始化；cd/rm/code/nvim 的 Fzf 预览（lsd/bat） |
+| `aliases.zsh` | Docker/nvim/Dir/Tools 等别名；`ls`→lsd、`cat`→bat、`top`→btop、`rm`→safe-rm |
+| `functions/` | `index.zsh` 按序加载 file-ops、fzf、git、yazi、process、docker、dev、proxy、pkg；内置命令见下表「内置好用工具」 |
 | `history.zsh` | 10000 条历史、多终端共享、去重 |
 | `completions.zsh` | compinit、菜单选择、dircolors |
 | `plugins.zsh` | 加载 autosuggestions、history-substring-search、syntax-highlighting、vi-mode（vi-mode 内加载 fzf） |
 | `keybindings.zsh` | ↑↓ 子串历史搜索（须在 plugins 之后） |
+
+---
+
+## 内置好用工具
+
+加载本配置后可直接使用的命令（按模块分类）：
+
+| 命令 | 说明 |
+|------|------|
+| **文件与目录** | |
+| `mkcd <dir>...` | 创建目录并进入 |
+| `lt [层级] [路径...]` | 树形列表（默认深度 2，依赖 lsd） |
+| `rmr <根目录> <模式...>` | 按文件名模式递归查找并确认后删除（Bun） |
+| `rme <保留名...>` | 删除当前目录除指定名称外的所有项（Bun） |
+| `open [路径]` | 用系统文件管理器打开目录（WSL→explorer，macOS→Finder，Linux→xdg-open） |
+| **搜索与打开** | |
+| `ff [-d\|-f\|-a] [路径]` | Fzf 选文件/目录，Alt-O nvim、Ctrl-O VSCode（Bun 列表） |
+| `fs [路径]` | Fzf 搜内容（rg），选行后 Alt-O/Ctrl-O 打开并跳行（Bun） |
+| **Git** | |
+| `gdiff` | Fzf 选文件看 diff，Stage/Unstage（delta 预览） |
+| **进程** | |
+| `fp [端口]` | Fzf 选进程杀（无参全部，有参仅该端口；依赖 lsof） |
+| `killByName <名>` / `killByPort <端口>` | 按名/按端口杀进程（Bun） |
+| **Docker** | |
+| `dd` | 统一面板：容器+镜像，Tab 多选，l/e/c/s/r/R/d/i 等快捷键（Bun） |
+| `dinfo <repo> <tag>` | 查 Docker Hub 仓库 tag 的 digest/size（Bun） |
+| **开发** | |
+| `d` / `b` / `i` / `t` | 开发/构建/安装/测试（转发到 `functions/bun/src/dev.ts`） |
+| **代理** | |
+| `setProxy [端口]` / `unsetProxy` | HTTP(S) 与 git 代理开关（Bun 生成 export/unset） |
+| **包管理** | |
+| `ins <包名>...` | 通用安装：按发行版执行 pacman/apt/dnf/zypper/apk/brew |
+
+*依赖 Bun 的命令在未安装 Bun 时会提示；`ff`/`fs`/`gdiff`/`dd` 等还依赖 fzf，部分依赖 rg/delta/lsd*
 
 ---
 
@@ -100,11 +125,10 @@ echo 'source ~/.zsh/zshrc' > ~/.zshrc
 | 工具 | 用途 |
 |------|------|
 | [Starship](https://starship.rs/) | Prompt |
-| [Vfox](https://github.com/version-fox/vfox) | 多运行时管理 |
 | [Zoxide](https://github.com/ajeetdsouza/zoxide) | 智能 cd |
 | [Fzf](https://github.com/junegunn/fzf) | 模糊搜索 |
 | [fd](https://github.com/sharkdp/fd) | Fzf 文件搜索后端 |
-| [eza](https://github.com/eza-community/eza) | ls 替代、Fzf 目录预览 |
+| [lsd](https://github.com/lsd-rs/lsd) | ls 替代、Fzf 目录预览 |
 | [bat](https://github.com/sharkdp/bat) | cat 替代、Fzf 文件预览 |
 | [btop](https://github.com/aristocratos/btop) | top 替代（别名 `top`） |
 | [rg](https://github.com/BurntSushi/ripgrep) | fs/fso 内容搜索 |
