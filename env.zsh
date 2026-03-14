@@ -13,12 +13,6 @@ else
   export cmdKey="ctrl"
   export fzfOptionBind="alt"
   export fzfCmdBind="ctrl"
-
-  # starship、nvim、mise 配置路径全局共享
-  export STARSHIP_CONFIG="/usr/local/share/shell-config/.config/starship.toml"
-  export XDG_CONFIG_HOME="/usr/local/share/shell-config/.config"
-  export XDG_DATA_HOME="/usr/local/share/shell-config/.local/share"
-  export MISE_DATA_DIR="/usr/local/share/shell-config/mise"
 fi
 
 # 中文环境
