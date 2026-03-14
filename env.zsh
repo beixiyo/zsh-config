@@ -21,6 +21,10 @@ else
   export MISE_DATA_DIR="/usr/local/share/shell-config/mise"
 fi
 
+# 中文环境
+export LANG=zh_CN.UTF-8
+export LC_ALL=zh_CN.UTF-8
+
 # WSL 默认浏览器
 export BROWSER="'/mnt/c/Program Files/Google/Chrome/Application/chrome.exe'"
 
