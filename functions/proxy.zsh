@@ -18,9 +18,11 @@
 }
 
 setProxy() {
+  command -v bun &>/dev/null || { echo "❌ 需要安装 bun"; return 1 }
   eval "$(bun run "$PROXY_BUN_SCRIPT" set "$@")"
 }
 
 unsetProxy() {
+  command -v bun &>/dev/null || { echo "❌ 需要安装 bun"; return 1 }
   eval "$(bun run "$PROXY_BUN_SCRIPT" unset "$@")"
 }

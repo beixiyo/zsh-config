@@ -16,11 +16,14 @@
 
 ## 按进程名杀（匹配命令行）
 killByName() {
+  command -v bun &>/dev/null || { echo "❌ 需要安装 bun"; return 1 }
   bun run "$PROCESS_BUN_SCRIPT" kill-by-name "$@"
 }
 
 ## 按端口杀（依赖 lsof）
 killByPort() {
+  command -v lsof &>/dev/null || { echo "❌ 需要安装 lsof"; return 1 }
+  command -v bun &>/dev/null || { echo "❌ 需要安装 bun"; return 1 }
   bun run "$PROCESS_BUN_SCRIPT" kill-by-port "$@"
 }
 
@@ -29,6 +32,8 @@ killByPort() {
 ## 无参：全部进程
 ## fp <端口>：仅该端口监听进程（依赖 lsof）
 fp() {
+  command -v fzf &>/dev/null || { echo "❌ 需要安装 fzf"; return 1 }
+  command -v bun &>/dev/null || { echo "❌ 需要安装 bun"; return 1 }
   local pids
   if (($# == 1)) && [[ "$1" =~ ^[0-9]+$ ]]; then
     local port=$1

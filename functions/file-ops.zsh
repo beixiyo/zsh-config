@@ -17,6 +17,7 @@ mkcd() { mkdir -p "$@" && cd "$@"; }
 
 ## 树形列表（可传递递归层级，默认 2）。用法：lt [层级] [路径...]
 lt() {
+  command -v lsd &>/dev/null || { echo "❌ 需要安装 lsd"; return 1 }
   local level=2
   [[ "$1" == <-> ]] && { level=$1; shift }
   lsd -l -a --icon always --group-directories-first -h --git \
@@ -25,11 +26,13 @@ lt() {
 
 ## 在根目录下按文件名模式递归查找并确认后删除。用法：rmr <根目录> <模式1> [模式2] ...
 rmr() {
+  command -v bun &>/dev/null || { echo "❌ 需要安装 bun"; return 1 }
   bun run "$FILE_OPS_BUN_SCRIPT" rmr "$@"
 }
 
 ## 删除当前目录除指定名称外的所有项。用法：rme <要保留的文件名1> [文件名2] ...
 rme() {
+  command -v bun &>/dev/null || { echo "❌ 需要安装 bun"; return 1 }
   bun run "$FILE_OPS_BUN_SCRIPT" rme "$@"
 }
 
@@ -38,10 +41,13 @@ rme() {
 open() {
   local target="${1:-.}"
   if [[ -n "$WSL_DISTRO_NAME" ]] || [[ -n "$WSLENV" ]] || { [[ -r /proc/version ]] && grep -qi microsoft /proc/version; }; then
+    command -v explorer.exe &>/dev/null || { echo "❌ 未找到 explorer.exe (WSL)"; return 1 }
     explorer.exe "$target"
   elif [[ "$OSTYPE" == darwin* ]]; then
-    open "$target"
+    command -v open &>/dev/null || { echo "❌ 未找到 open (macOS)"; return 1 }
+    command open "$target"
   else
+    command -v xdg-open &>/dev/null || { echo "❌ 需要安装 xdg-open"; return 1 }
     xdg-open "$target"
   fi
 }

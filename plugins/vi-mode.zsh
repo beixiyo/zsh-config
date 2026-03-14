@@ -5,7 +5,7 @@ ZVM_KEYTIMEOUT=0.2
 # fzf 必须在 vi-mode 完全初始化后再加载，否则 vi-mode 的延迟 init 会覆盖 Ctrl+R 等绑定
 # 详见 https://github.com/jeffreytse/zsh-vi-mode/wiki/Integration#fzf
 function zvm_after_init() {
-  source <(fzf --zsh)
+  command -v fzf &>/dev/null && source <(fzf --zsh)
 }
 
 ZVM_MODE_INDICATOR_NORMAL='[N]'

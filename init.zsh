@@ -1,3 +1,6 @@
+# 有 fastfetch 则启动时执行一次（系统信息概览）
+command -v fastfetch &>/dev/null && fastfetch
+
 # ------------------------------ 自动设置终端标题（兼容 WSL + WezTerm）
 wezterm_set_title() {
   local dir
@@ -16,20 +19,22 @@ command -v mise >/dev/null 2>&1 && eval "$(mise activate zsh)" # 替代 vfox
 # Fzf 集成：Ctrl+R 历史、Ctrl+T 文件、Alt+C 目录预览、ssh ** Tab 等
 # 已移至 plugins/vi-mode.zsh 的 zvm_after_init 中，因 vi-mode 延迟 init 会覆盖 fzf 的绑定
 
-# Fzf 预览：cd/rm 用 eza 预览目录，code/vim 等用 bat 预览文件
-local -a preview_dir_cmds=(cd rm)
-local -a preview_file_cmds=(code vim nvim vi bat cat nano)
-_fzf_comprun() {
-  local command=$1
-  shift
+# Fzf 预览：cd/rm 用 lsd 预览目录（无则 ls），code/vim 等用 bat 预览文件（无则 cat）；仅当 fzf 存在时定义
+if command -v fzf &>/dev/null; then
+  local -a preview_dir_cmds=(cd rm)
+  local -a preview_file_cmds=(code vim nvim vi bat cat nano)
+  _fzf_comprun() {
+    local command=$1
+    shift
 
-  if (($preview_dir_cmds[(Ie)$command])); then
-    fzf --preview 'eza -T --icons --color=always --level=2 --group-directories-first {} | head -200' "$@"
+    if (($preview_dir_cmds[(Ie)$command])); then
+      fzf --preview '(command -v lsd &>/dev/null && lsd --tree --depth 2 --color always --icon always --group-directories-first -a {} || ls -la {}) | head -200' "$@"
 
-  elif (($preview_file_cmds[(Ie)$command])); then
-    fzf --preview 'bat --color=always --style=numbers --line-range=:500 {}' "$@"
+    elif (($preview_file_cmds[(Ie)$command])); then
+      fzf --preview '(command -v bat &>/dev/null && bat --color=always --style=numbers --line-range=:500 {} || cat {})' "$@"
 
-  else
-    fzf "$@"
-  fi
-}
+    else
+      fzf "$@"
+    fi
+  }
+fi

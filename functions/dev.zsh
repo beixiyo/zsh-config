@@ -18,17 +18,21 @@
 }
 
 d() {
+  command -v bun &>/dev/null || { echo "❌ 需要安装 bun"; return 1 }
   bun run "$DEV_BUN_SCRIPT" d "$@"
 }
 
 b() {
+  command -v bun &>/dev/null || { echo "❌ 需要安装 bun"; return 1 }
   bun run "$DEV_BUN_SCRIPT" b "$@"
 }
 
 i() {
+  command -v bun &>/dev/null || { echo "❌ 需要安装 bun"; return 1 }
   bun run "$DEV_BUN_SCRIPT" i "$@"
 }
 
 t() {
+  command -v bun &>/dev/null || { echo "❌ 需要安装 bun"; return 1 }
   bun run "$DEV_BUN_SCRIPT" t "$@"
 }

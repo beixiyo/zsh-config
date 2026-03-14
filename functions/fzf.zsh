@@ -14,10 +14,10 @@ else
 fi
 _fzf_bun_dir="${${(%):-%x}:A:h}/bun/src"
 
-## 文件预览：如果是目录用 lsd，否则用 bat
-_ff_preview="if [ -d {} ]; then lsd --tree --depth 3 --color always --icon always --group-directories-first -a {}; else bat --color=always --style=numbers --line-range=:500 {}; fi"
-## 行预览（用于 rg 结果 file:line）
-_fs_preview="bat --color=always --style=numbers --theme=base16 --highlight-line {2} {1}"
+## 文件预览：目录用 lsd（无则 ls），文件用 bat（无则 cat）
+_ff_preview="if [ -d {} ]; then (command -v lsd &>/dev/null && lsd --tree --depth 3 --color always --icon always --group-directories-first -a {} || ls -la {}); else (command -v bat &>/dev/null && bat --color=always --style=numbers --line-range=:500 {} || cat {}); fi"
+## 行预览（用于 rg 结果 file:line）：bat 不存在则用 cat
+_fs_preview="(command -v bat &>/dev/null && bat --color=always --style=numbers --theme=base16 --highlight-line {2} {1} || cat {1})"
 _fs_opts=(
   --disabled --ansi
   --bind "start:reload:rg --column --line-number --no-heading --color=always --smart-case \"\" < /dev/null"
@@ -77,6 +77,15 @@ _fzf_list_files() {
 
 ## Find File Open 选文件后 Alt-O 用 nvim 打开，Ctrl-O 用 VSCode 打开（列表带 Nerd Font 图标，Bun 生成）
 ff() {
+  if ! command -v fzf &>/dev/null; then
+    echo "❌ 需要安装 fzf"
+    return 1
+  fi
+  if ! command -v bun &>/dev/null; then
+    echo "❌ 需要安装 bun"
+    return 1
+  fi
+
   local dir="."
   local type_flag="" # 默认全部
   local args=()
@@ -100,7 +109,7 @@ ff() {
   local reload_f="bun run \"$_dir/bun/src/ff-list.ts\" --dir \"$dir\" --type f 2>/dev/null < /dev/null"
   local reload_d="bun run \"$_dir/bun/src/ff-list.ts\" --dir \"$dir\" --type d 2>/dev/null < /dev/null"
   local reload_a="bun run \"$_dir/bun/src/ff-list.ts\" --dir \"$dir\" --type a 2>/dev/null < /dev/null"
-  local ff_preview_path="if [ -d {2} ]; then lsd --tree --depth 3 --color always --icon always --group-directories-first -a {2}; else bat --color=always --style=numbers --line-range=:500 {2}; fi"
+  local ff_preview_path="if [ -d {2} ]; then (command -v lsd &>/dev/null && lsd --tree --depth 3 --color always --icon always --group-directories-first -a {2} || ls -la {2}); else (command -v bat &>/dev/null && bat --color=always --style=numbers --line-range=:500 {2} || cat {2}); fi"
   local _abs_ff="bun run \"$_fzf_bun_dir/path.ts\" abs {+2} 2>/dev/null | $_fzf_copy_cmd"
   local bind_file_ff=(
     --bind "${fzfCmdBind}-o:execute(code {2})"
@@ -123,6 +132,19 @@ ff() {
 
 ## Find String Open 搜到内容后 Alt-O 用 nvim 打开并跳到行，Ctrl-O 用 VSCode 打开（列表带文件类型图标，Bun 过滤）
 fs() {
+  if ! command -v fzf &>/dev/null; then
+    echo "❌ 需要安装 fzf"
+    return 1
+  fi
+  if ! command -v rg &>/dev/null; then
+    echo "❌ 需要安装 ripgrep (rg)"
+    return 1
+  fi
+  if ! command -v bun &>/dev/null; then
+    echo "❌ 需要安装 bun"
+    return 1
+  fi
+
   local dir="."
   [[ -d "$1" ]] && dir="$1"
   local _dir="${${(%):-%x}:A:h}"
@@ -130,7 +152,7 @@ fs() {
   local fs_gen="$rg_cmd \"\" \"$dir\" < /dev/null | bun run \"$_dir/bun/src/fs-list.ts\" 2>/dev/null"
   local reload_start="eval \"$rg_cmd \\\"\\\" \\\"$dir\\\" < /dev/null | bun run \\\"$_dir/bun/src/fs-list.ts\\\" 2>/dev/null\""
   local reload_change="$rg_cmd {q} \"$dir\" < /dev/null | bun run \"$_dir/bun/src/fs-list.ts\" 2>/dev/null || true"
-  local _fs_preview_icon='p=$(echo {2} | cut -d: -f1); l=$(echo {2} | cut -d: -f2); bat --color=always --style=numbers --theme=base16 --highlight-line "$l" "$p"'
+  local _fs_preview_icon='p=$(echo {2} | cut -d: -f1); l=$(echo {2} | cut -d: -f2); (command -v bat &>/dev/null && bat --color=always --style=numbers --theme=base16 --highlight-line "$l" "$p" || cat "$p")'
   local _abs_fs="bun run \"$_fzf_bun_dir/path.ts\" abs {+2} 2>/dev/null | $_fzf_copy_cmd"
   local bind_fs_line=(
     --bind "${fzfCmdBind}-o:execute(code -g \"\$(echo {2} | cut -d: -f1):\$(echo {2} | cut -d: -f2)\")"

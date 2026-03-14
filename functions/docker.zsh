@@ -9,6 +9,7 @@
 # Docker Hub v2 API：仓库 / tag / 当前 arch·os 的 digest·size
 # 用法: dinfo <repo> <tag> [arch] [os]，例: dinfo clickhouse/clickhouse-server 26.1.2
 dinfo() {
+  command -v bun &>/dev/null || { echo "❌ 需要安装 bun"; return 1 }
   bun run "$DOCKER_BUN_SCRIPT" dinfo "$@"
 }
 
@@ -19,6 +20,9 @@ d:Rm-Cont(Stop+Rm) | i:Rm-Img(rmi，仅镜像)"
 # 统一 Docker 面板：容器 + 镜像，数据源与按键逻辑均在 Bun（docker.ts list / dispatch）
 # 进入 fzf 前先在本 shell 完成 sudo 认证，否则管道内 bun→sudo 无 TTY 无法输入密码
 dd() {
+  command -v docker &>/dev/null || { echo "❌ 需要安装 docker"; return 1 }
+  command -v fzf &>/dev/null || { echo "❌ 需要安装 fzf"; return 1 }
+  command -v bun &>/dev/null || { echo "❌ 需要安装 bun"; return 1 }
   sudo -v || return 1
   local choice gen_list gen_list_bind dispatch_cmd
   gen_list="bun run \"$DOCKER_BUN_SCRIPT\" list 2>/dev/null"
@@ -46,6 +50,9 @@ dd() {
 
 # 选一个运行中容器 → exec 进去（默认 bash，无则 sh）
 dex() {
+  command -v docker &>/dev/null || { echo "❌ 需要安装 docker"; return 1 }
+  command -v fzf &>/dev/null || { echo "❌ 需要安装 fzf"; return 1 }
+  command -v bun &>/dev/null || { echo "❌ 需要安装 bun"; return 1 }
   sudo -v || return 1
   local line id gen_list
   gen_list="bun run \"$DOCKER_BUN_SCRIPT\" list containers 2>/dev/null"
@@ -57,6 +64,9 @@ dex() {
 
 # 选一个容器 → 实时看 logs（-f）
 dlogs() {
+  command -v docker &>/dev/null || { echo "❌ 需要安装 docker"; return 1 }
+  command -v fzf &>/dev/null || { echo "❌ 需要安装 fzf"; return 1 }
+  command -v bun &>/dev/null || { echo "❌ 需要安装 bun"; return 1 }
   sudo -v || return 1
   local line id gen_list
   gen_list="bun run \"$DOCKER_BUN_SCRIPT\" list containers --all 2>/dev/null"
@@ -69,6 +79,7 @@ dlogs() {
 # 指定容器 → 实时看 logs。默认仅当前运行周期（--since）；加 --no-since 则显示全部
 # 用法: dlog <container-name> [--no-since]，例: dlog flowtica-monitor | dlog flowtica-monitor --no-since
 dlog() {
+  command -v docker &>/dev/null || { echo "❌ 需要安装 docker"; return 1 }
   local no_since name
   for arg in "$@"; do
     [[ "$arg" == --no-since ]] && no_since=1
@@ -85,6 +96,9 @@ dlog() {
 
 # 选一个容器 → 复制 ID 到剪贴板（WSL: clip.exe）
 dcp() {
+  command -v docker &>/dev/null || { echo "❌ 需要安装 docker"; return 1 }
+  command -v fzf &>/dev/null || { echo "❌ 需要安装 fzf"; return 1 }
+  command -v bun &>/dev/null || { echo "❌ 需要安装 bun"; return 1 }
   sudo -v || return 1
   local line id gen_list
   gen_list="bun run \"$DOCKER_BUN_SCRIPT\" list containers --all 2>/dev/null"
@@ -101,6 +115,7 @@ dcp() {
 
 # 启动一串 hello-world 级测试容器（约 13KB 镜像 + 1 个常驻），用完可 dclean-test 清理
 dtest() {
+  command -v docker &>/dev/null || { echo "❌ 需要安装 docker"; return 1 }
   sudo -v || return 1
   echo "Creating hello-world level test containers..."
   sudo docker run --name dtest-hw1 hello-world
@@ -114,6 +129,7 @@ dtest() {
 
 # 停止并删除所有 dtest-* 容器
 dclean-test() {
+  command -v docker &>/dev/null || { echo "❌ 需要安装 docker"; return 1 }
   sudo -v || return 1
   local ids
   ids=$(sudo docker ps -aq -f name=^dtest- 2>/dev/null)
