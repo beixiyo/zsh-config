@@ -16,6 +16,11 @@ command -v vfox >/dev/null 2>&1 && eval "$(vfox activate zsh)"
 command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init --cmd cd zsh)"
 command -v mise >/dev/null 2>&1 && eval "$(mise activate zsh)" # 替代 vfox
 
+# Homebrew（Apple Silicon / Intel / Linux 常见路径，未安装则跳过）
+[ -f /opt/homebrew/bin/brew ] && eval "$(/opt/homebrew/bin/brew shellenv zsh)"
+[ -f /usr/local/bin/brew ] && eval "$(/usr/local/bin/brew shellenv zsh)"
+[ -f /home/linuxbrew/.linuxbrew/bin/brew ] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv zsh)"
+
 # Fzf 集成：Ctrl+R 历史、Ctrl+T 文件、Alt+C 目录预览、ssh ** Tab 等
 # 已移至 plugins/vi-mode.zsh 的 zvm_after_init 中，因 vi-mode 延迟 init 会覆盖 fzf 的绑定
 
