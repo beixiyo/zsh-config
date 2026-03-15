@@ -19,6 +19,11 @@ fi
 # export LANG=zh_CN.UTF-8
 # export LC_ALL=zh_CN.UTF-8
 
+# 让 Mesa 的 OpenGL 使用微软的 D3D12 Gallium 驱动，把 OpenGL 调用转成 D3D12，在 Windows GPU 上做 3D/2D 渲染。不设或设错可能退回到 llvmpipe 等软件渲染
+export GALLIUM_DRIVER=d3d12
+# 让 VA-API（Linux 上常用的视频编解码加速接口）使用基于 D3D12 的实现，这样 ffmpeg、部分播放器等用 VA-API 的应用能在 WSL 里用 GPU 做视频解码/编码
+export LIBVA_DRIVER_NAME=d3d12
+
 # WSL 默认浏览器
 export BROWSER="'/mnt/c/Program Files/Google/Chrome/Application/chrome.exe'"
 
